@@ -417,6 +417,46 @@
       box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
     }
 
+    .search-clear-wrap {
+      position: relative;
+      width: 100%;
+    }
+
+    .search-clear-wrap .search-clear-input {
+      width: 100%;
+      padding-right: 42px;
+    }
+
+    .search-clear-button {
+      position: absolute;
+      top: 50%;
+      right: 8px;
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      transform: translateY(-50%);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--muted);
+      font-size: 1.25rem;
+      line-height: 1;
+      box-shadow: none;
+    }
+
+    .search-clear-button:hover,
+    .search-clear-button:focus-visible {
+      transform: translateY(-50%);
+      background: var(--surface-soft);
+      color: var(--text);
+    }
+
+    .search-clear-input:placeholder-shown + .search-clear-button {
+      display: none;
+    }
+
     .categories {
       display: grid;
       grid-template-columns: 1fr;
@@ -1985,6 +2025,29 @@
       closeAboutBtn: document.getElementById("closeAboutBtn"),
       aboutLogo: document.getElementById("aboutLogo")
     };
+
+    function enhanceSearchInput(input) {
+      if (!input || input.parentElement?.classList.contains('search-clear-wrap')) return;
+      const wrapper = document.createElement('div');
+      wrapper.className = 'search-clear-wrap';
+      const clearButton = document.createElement('button');
+      clearButton.className = 'search-clear-button';
+      clearButton.type = 'button';
+      clearButton.textContent = '×';
+      clearButton.setAttribute('aria-label', `Limpar ${input.placeholder || 'pesquisa'}`);
+      input.classList.add('search-clear-input');
+      input.parentNode.insertBefore(wrapper, input);
+      wrapper.appendChild(input);
+      wrapper.appendChild(clearButton);
+      clearButton.addEventListener('click', () => {
+        input.value = '';
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.focus();
+      });
+    }
+
+    [els.busca, els.panelSearch, els.athleteSearch, els.categorySearch, els.editBusca]
+      .forEach(enhanceSearchInput);
 
     function isDarkTheme() {
       return document.documentElement.dataset.theme === 'dark';

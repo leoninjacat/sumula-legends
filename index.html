@@ -1,0 +1,3849 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="description" content="Sistema para inscrição e organização de atletas em campeonatos." />
+  <meta name="application-name" content="Súmula Legends" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Súmula Legends" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
+  <title>Súmula Legends v0.4.1</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: #dbe3ee;
+      --accent: #2563eb;
+      --accent-2: #1d4ed8;
+      --danger: #dc2626;
+      --ok: #15803d;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      --radius: 18px;
+      --surface: #ffffff;
+      --surface-soft: #f8fbff;
+      --surface-subtle: #fbfdff;
+      --secondary-bg: #eef4ff;
+      --secondary-border: #cddcff;
+      --heading: #334155;
+    }
+
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #0b1120;
+      --card: #111827;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --line: #334155;
+      --accent: #60a5fa;
+      --accent-2: #3b82f6;
+      --danger: #f87171;
+      --ok: #4ade80;
+      --shadow: 0 12px 34px rgba(0, 0, 0, 0.32);
+      --surface: #111827;
+      --surface-soft: #172033;
+      --surface-subtle: #131d2e;
+      --secondary-bg: #172554;
+      --secondary-border: #28447e;
+      --heading: #cbd5e1;
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      min-height: 100%;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, var(--surface-soft) 0%, var(--bg) 100%);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    .wrap {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 16px 24px max(40px, calc(env(safe-area-inset-bottom, 0px) + 28px));
+      height: 100dvh;
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .hero {
+      margin-bottom: 16px;
+      flex: 0 0 auto;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+
+    .brand-slot {
+      width: 180px;
+      min-width: 180px;
+      height: 64px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--surface);
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .brand-slot img {
+      display: block;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .print-watermark,
+    .document-credit {
+      display: none;
+    }
+
+    .championship-name {
+      min-width: 240px;
+      flex: 1 1 auto;
+      border: 0;
+      outline: none;
+      background: transparent;
+      color: var(--text);
+      font: inherit;
+      font-size: clamp(1.35rem, 1.8vw, 2rem);
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      padding: 6px 2px;
+      width: 100%;
+    }
+
+    .championship-field {
+      position: relative;
+      min-width: 240px;
+      flex: 1 1 auto;
+    }
+
+    .championship-field .championship-name { padding-right: 108px; }
+
+    .save-indicator {
+      position: absolute;
+      top: 50%;
+      right: 8px;
+      transform: translateY(-50%);
+      padding: 5px 9px;
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      border-radius: 999px;
+      background: rgba(245, 158, 11, 0.16);
+      color: #b45309;
+      font-size: 0.76rem;
+      font-weight: 800;
+      pointer-events: none;
+    }
+
+    :root[data-theme="dark"] .save-indicator { color: #fbbf24; }
+    .save-indicator[hidden] { display: none; }
+
+    .championship-name::placeholder {
+      color: var(--text);
+      opacity: 0.72;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: nowrap;
+      justify-content: flex-end;
+      flex: 0 0 auto;
+    }
+
+    .more-menu-wrap { position: relative; flex: 0 0 auto; }
+
+    .main-menu-button {
+      width: 46px;
+      min-width: 46px;
+      height: 46px;
+      padding: 0;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      background: var(--secondary-bg);
+      color: var(--text);
+      border: 1px solid var(--secondary-border);
+    }
+
+    .main-menu-button span {
+      display: block;
+      width: 19px;
+      height: 2px;
+      border-radius: 999px;
+      background: currentColor;
+    }
+
+    .more-menu-button {
+      width: 46px;
+      min-width: 46px;
+      height: 46px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--secondary-bg);
+      color: var(--text);
+      border: 1px solid var(--secondary-border);
+      font-size: 1.45rem;
+      line-height: 1;
+      letter-spacing: 0.08em;
+    }
+
+    .more-menu-button[aria-expanded="true"] {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    }
+
+    .more-menu {
+      position: fixed;
+      z-index: 4000;
+      min-width: 230px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+    }
+
+    .main-menu { width: min(300px, calc(100vw - 24px)); }
+
+    .menu-item {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 11px 12px;
+      background: transparent;
+      color: var(--text);
+      text-align: left;
+      border: 0;
+    }
+
+    .menu-item:hover,
+    .menu-item:focus-visible { background: var(--surface-soft); transform: none; }
+    .menu-item:disabled { opacity: 0.45; cursor: not-allowed; }
+    .menu-item:disabled:hover { background: transparent; }
+    .menu-divider { height: 1px; margin: 6px 4px; background: var(--line); }
+    .menu-shortcut { color: var(--muted); font-size: 0.8rem; }
+
+    .export-submenu {
+      position: fixed;
+      z-index: 4001;
+      min-width: 240px;
+      padding: 8px;
+      border-radius: 12px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .export-submenu[hidden] { display: none; }
+
+    .theme-options { display: grid; gap: 10px; padding: 18px 0 4px; }
+    .theme-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--surface-soft);
+      cursor: pointer;
+    }
+
+    .theme-option input { width: auto; }
+    .about-brand { text-align: center; padding: 20px 12px 24px; }
+    .about-app-logo {
+      display: block;
+      width: min(150px, 48%);
+      aspect-ratio: 1;
+      margin: 0 auto;
+      border-radius: 24%;
+      object-fit: contain;
+    }
+    .about-federation-logo {
+      display: block;
+      width: min(150px, 48%);
+      max-height: 68px;
+      margin: 18px auto 14px;
+      object-fit: contain;
+    }
+
+    .championship-list { display: grid; gap: 10px; }
+    .championship-list-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 14px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--surface-soft);
+    }
+    .championship-list-item strong { display: block; margin-bottom: 4px; }
+    .championship-list-meta { color: var(--muted); font-size: 0.84rem; }
+
+    .more-menu[hidden] { display: none; }
+
+    .theme-menu-item {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 12px;
+      background: transparent;
+      color: var(--text);
+      text-align: left;
+    }
+
+    .theme-menu-item:hover,
+    .theme-menu-item:focus-visible {
+      background: var(--surface-soft);
+      transform: none;
+      outline: none;
+    }
+
+    .theme-menu-icon { width: 22px; text-align: center; font-size: 1.05rem; }
+
+
+    .layout {
+      display: block;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .panel {
+      padding: 18px 18px 24px;
+      height: 100%;
+      min-height: 0;
+      overflow: auto;
+    }
+
+    .panel h2,
+    .content h2,
+    .category-block h3 {
+      margin: 0 0 14px;
+      font-size: 1.1rem;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .inline-link {
+      border: 0;
+      padding: 0;
+      background: transparent;
+      color: var(--accent);
+      font: inherit;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .inline-link:hover {
+      color: var(--accent-2);
+      text-decoration: underline;
+      transform: none;
+    }
+
+    .inline-link:active {
+      transform: none;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 1rem;
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    }
+
+    .categories {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      max-height: 260px;
+      overflow: auto;
+      padding: 2px;
+      margin-bottom: 14px;
+    }
+
+    .check {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: var(--surface-subtle);
+    }
+
+    .check input {
+      transform: scale(1.15);
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+
+
+    .actions-compact {
+      grid-template-columns: 1fr;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 0.98rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.15s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+
+    .primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .primary:hover { background: var(--accent-2); }
+
+    .secondary {
+      background: var(--secondary-bg);
+      color: var(--accent);
+      border: 1px solid var(--secondary-border);
+    }
+
+    .danger {
+      background: #fff1f2;
+      color: var(--danger);
+      border: 1px solid #fecdd3;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 14px;
+      min-width: 0;
+    }
+
+    .toolbar-left,
+    .toolbar-right {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 10px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .toolbar-left {
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding-bottom: 2px;
+    }
+
+    .toolbar-left h2,
+    .toolbar-left button {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
+    .toolbar-right {
+      margin-left: auto;
+      flex: 0 0 auto;
+    }
+
+    .toolbar-search {
+      width: clamp(240px, 28vw, 340px);
+      min-width: 240px;
+      flex: 0 0 auto;
+    }
+
+    .toolbar-search input {
+      width: 100%;
+    }
+
+    .hero::-webkit-scrollbar,
+    .toolbar::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .content {
+      padding: 18px 18px 26px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .app-tabs {
+      display: flex;
+      gap: 6px;
+      margin: -4px -4px 16px;
+      padding: 4px;
+      border-bottom: 1px solid var(--line);
+      overflow-x: auto;
+      flex: 0 0 auto;
+    }
+
+    .app-tab {
+      flex: 0 0 auto;
+      padding: 11px 18px;
+      border: 0;
+      border-radius: 12px 12px 0 0;
+      background: transparent;
+      color: var(--muted);
+      box-shadow: none;
+    }
+
+    .app-tab:hover,
+    .app-tab:focus-visible {
+      background: var(--surface-soft);
+      color: var(--text);
+      transform: none;
+    }
+
+    .app-tab[aria-selected="true"] {
+      background: var(--secondary-bg);
+      color: var(--accent);
+      box-shadow: inset 0 -3px 0 var(--accent);
+    }
+
+    .tab-panel {
+      display: none;
+      min-height: 0;
+      flex: 1 1 auto;
+      overflow: auto;
+      padding-right: 4px;
+      padding-bottom: 28px;
+    }
+
+    .tab-panel.active { display: block; }
+
+    .tab-panel-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .tab-panel-header h2 { margin: 0 0 5px; }
+    .tab-panel-header p { margin: 0; }
+
+    .category-toolbar-right { position: relative; }
+
+    .category-add-button {
+      width: 46px;
+      min-width: 46px;
+      height: 46px;
+      padding: 0;
+      font-size: 1.65rem;
+      line-height: 1;
+    }
+
+    .category-manager-form {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      z-index: 1200;
+      width: min(420px, calc(100vw - 52px));
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+    }
+
+    .category-manager-form[hidden] { display: none; }
+    .category-manager-form .field { margin: 0; }
+    .category-manager-actions { display: flex; justify-content: flex-end; gap: 10px; }
+    .category-manager-form button { white-space: nowrap; }
+    .category-kind { color: var(--muted); font-size: 0.86rem; font-weight: 700; }
+    .actions-column { min-width: 180px; }
+    .table-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: nowrap;
+      width: max-content;
+    }
+    .table-actions button {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
+    .status {
+      margin-bottom: 14px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-weight: 600;
+      display: none;
+    }
+
+    .status.show { display: block; }
+    .status.ok { background: #effdf5; color: var(--ok); border: 1px solid #bbf7d0; }
+    .status.warn { background: #fff7ed; color: #b45309; border: 1px solid #fed7aa; }
+    .status.error { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; }
+
+    .status-inline {
+      margin: 10px 0 0;
+      font-size: 0.9rem;
+      padding: 10px 12px;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+    }
+
+    .athletes-section {
+      min-height: 0;
+      overflow: auto;
+      padding-right: 4px;
+      padding-bottom: 28px;
+      margin-top: 2px;
+    }
+
+    .athletes-section > * + * {
+      margin-top: 18px;
+    }
+
+    .toast-wrap {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 2147483647;
+      pointer-events: none;
+      align-items: center;
+    }
+
+    .toast {
+      min-width: min(92vw, 320px);
+      max-width: min(92vw, 420px);
+      padding: 12px 16px;
+      border-radius: 999px;
+      color: #fff;
+      font-weight: 700;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.22);
+      opacity: 0;
+      transform: translateY(12px) scale(0.98);
+      transition: opacity 0.22s ease, transform 0.22s ease;
+      backdrop-filter: blur(8px);
+      text-align: center;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .toast.ok { background: rgba(21, 128, 61, 0.92); }
+    .toast.warn { background: rgba(180, 83, 9, 0.92); }
+    .toast.error { background: rgba(220, 38, 38, 0.92); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+      background: var(--surface);
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      padding: 12px 14px;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--surface-soft);
+      font-size: 0.92rem;
+      color: var(--heading);
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    .pill {
+      display: inline-block;
+      background: var(--secondary-bg);
+      color: var(--accent);
+      border: 1px solid #dbe8ff;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin: 0 6px 6px 0;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-height: 20px;
+      margin: 4px 0 2px;
+    }
+
+    .pill-row .pill {
+      margin: 0;
+    }
+
+    .pill-row-empty {
+      color: var(--muted);
+      font-size: 0.9rem;
+      padding: 2px 0;
+    }
+
+    .category-pill {
+      font: inherit;
+      font-size: 0.82rem;
+      cursor: pointer;
+    }
+
+    .category-pill:hover,
+    .category-pill:focus-visible {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      transform: none;
+      outline: none;
+    }
+
+    .small {
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .category-block {
+      padding: 16px;
+    }
+
+    .category-block h3 {
+      margin-bottom: 12px;
+    }
+
+    .mini-table {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .mini-table th,
+    .mini-table td {
+      padding: 10px 12px;
+      font-size: 0.94rem;
+    }
+
+  
+  .filler-row { display: none; }
+
+  .athlete-link {
+      border: 0;
+      padding: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      font-weight: 700;
+      text-align: left;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .athlete-link:hover {
+      color: var(--accent);
+      text-decoration: underline;
+    }
+
+    .athlete-link:focus-visible {
+      outline: 2px solid rgba(37, 99, 235, 0.35);
+      outline-offset: 4px;
+      border-radius: 6px;
+    }
+
+    .mini-table tbody tr.row-editable {
+      cursor: pointer;
+    }
+
+    .mini-table tbody tr.row-editable:hover td {
+      background: var(--surface-soft);
+    }
+
+    .empty {
+      color: var(--muted);
+      padding: 14px;
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      background: var(--surface-subtle);
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .icon-btn {
+      min-width: 44px;
+      padding-inline: 12px;
+    }
+
+
+
+    .fab {
+      position: fixed;
+      right: max(24px, calc(env(safe-area-inset-right, 0px) + 20px));
+      bottom: max(24px, calc(env(safe-area-inset-bottom, 0px) + 20px));
+      width: 64px;
+      height: 64px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #3b82f6 0%, var(--accent) 100%);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      line-height: 1;
+      box-shadow: 0 18px 36px rgba(37, 99, 235, 0.34);
+      z-index: 3600;
+      overflow: visible;
+    }
+
+    .fab:hover,
+    .fab:focus-visible {
+      background: linear-gradient(180deg, #2563eb 0%, var(--accent-2) 100%);
+      transform: translateY(-2px) scale(1.02);
+    }
+
+    .fab:active {
+      transform: translateY(0) scale(0.99);
+    }
+
+    .fab.is-hidden {
+      opacity: 0;
+      transform: translateY(12px) scale(0.88);
+      pointer-events: none;
+    }
+
+    .fab-plus {
+      display: inline-block;
+      transition: transform 220ms ease, opacity 180ms ease;
+      transform-origin: center;
+      will-change: transform;
+    }
+
+    .fab.is-open .fab-plus {
+      transform: rotate(45deg) scale(1.03);
+    }
+
+    .fab::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      right: calc(100% + 14px);
+      top: 50%;
+      transform: translateY(-50%) translateX(6px);
+      background: rgba(15, 23, 42, 0.94);
+      color: #fff;
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      line-height: 1;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.24);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
+
+    .fab:hover::after,
+    .fab:focus-visible::after {
+      opacity: 1;
+      transform: translateY(-50%) translateX(0);
+    }
+
+    .fab-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      z-index: 3000;
+    }
+
+    .modal.show {
+      display: block;
+    }
+
+    .modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.52);
+      backdrop-filter: blur(6px);
+    }
+
+    .modal-dialog {
+      position: relative;
+      width: min(1100px, calc(100vw - 32px));
+      max-height: calc(100vh - 32px);
+      margin: 16px auto;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 18px 18px 14px;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface);
+    }
+
+    .modal-body {
+      padding: 0 18px 18px;
+      overflow: auto;
+      background: var(--surface);
+      min-height: 0;
+      flex: 1 1 auto;
+    }
+
+    .modal-footer {
+      flex: 0 0 auto;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      border-top: 1px solid var(--line);
+      background: var(--surface);
+      box-shadow: 0 -8px 20px rgba(15, 23, 42, 0.06);
+    }
+
+    :root[data-theme="dark"] .modal-footer {
+      box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.18);
+    }
+
+    .modal-dialog.modal-sm {
+      width: min(760px, calc(100vw - 32px));
+    }
+
+    .modal-dialog.modal-centered {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      margin: 0;
+      transform: translate(-50%, -50%);
+      max-height: calc(100vh - 32px);
+    }
+
+    .modal-dialog.modal-form-dialog {
+      width: min(760px, calc(100vw - 32px));
+    }
+
+    @media (min-width: 1180px) and (min-height: 820px) {
+      .modal-dialog.modal-form-dialog {
+        position: absolute;
+        right: max(24px, calc(env(safe-area-inset-right, 0px) + 20px));
+        bottom: calc(max(24px, calc(env(safe-area-inset-bottom, 0px) + 20px)) + 82px);
+        margin: 0;
+        width: min(720px, calc(100vw - 48px));
+        max-height: min(820px, calc(100vh - 128px));
+      }
+    }
+
+    .modal-form {
+      display: grid;
+      gap: 14px;
+      padding-top: 18px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding-top: 4px;
+    }
+
+    @page {
+      size: auto;
+      margin: 10mm 8mm;
+    }
+
+    @media print {
+      html,
+      body {
+        background: #fff;
+      }
+
+      body {
+        font-size: 11px;
+        line-height: 1.2;
+      }
+
+      .panel,
+      .toolbar,
+      .status,
+      .footer-note,
+      .modal,
+      .fab {
+        display: none !important;
+      }
+
+      .layout {
+        display: block;
+      }
+
+      .wrap {
+        max-width: none;
+        padding: 0;
+      }
+
+      .content,
+      .card,
+      .category-block,
+      .table-wrap {
+        box-shadow: none;
+        border: 0;
+        padding: 0;
+        margin: 0;
+        border-radius: 0;
+      }
+
+      .category-grid {
+        display: block;
+        margin-top: 6px;
+      }
+
+      .category-block {
+        page-break-inside: avoid;
+        break-inside: avoid;
+        margin-bottom: 10px;
+      }
+
+      .category-block h3 {
+        margin: 0 0 4px;
+        font-size: 1rem;
+        line-height: 1.15;
+      }
+
+      .mini-table,
+      table {
+        min-width: 0;
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .mini-table th,
+      .mini-table td,
+      th,
+      td {
+        padding: 3px 5px;
+        font-size: 0.88rem;
+        line-height: 1.15;
+      }
+
+      .mini-table thead th,
+      thead th {
+        padding-top: 2px;
+        padding-bottom: 2px;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        line-height: 1.1;
+      }
+
+      p,
+      .small,
+      .empty {
+        margin: 2px 0 0;
+      }
+    }
+
+    @media (max-width: 980px) {
+      body {
+        overflow: auto;
+      }
+
+      .wrap {
+        height: auto;
+        min-height: 100dvh;
+        padding: 16px 16px max(32px, calc(env(safe-area-inset-bottom, 0px) + 20px));
+        display: block;
+      }
+
+      .hero {
+        align-items: center;
+        flex-wrap: nowrap;
+      }
+
+      .brand-slot {
+        width: 108px;
+        min-width: 108px;
+        height: 56px;
+      }
+
+      .championship-name {
+        min-width: 220px;
+      }
+
+      .hero-actions {
+        width: auto;
+      }
+
+      .hero-actions button {
+        flex: 0 0 auto;
+        white-space: nowrap;
+      }
+
+      .toolbar-left h2,
+      .toolbar-left button,
+      .toolbar-right input,
+      .hero-actions button {
+        white-space: nowrap;
+      }
+
+      .toolbar-right,
+      .toolbar-search {
+        width: auto;
+        min-width: 0;
+      }
+
+      .toolbar-search {
+        width: 260px;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .layout {
+        height: auto;
+        min-height: 0;
+      }
+
+      .panel,
+      .content {
+        position: static;
+        max-height: none;
+      }
+
+      .athletes-section {
+        overflow: visible;
+        padding-right: 0;
+      }
+
+      .tab-panel { overflow: visible; }
+
+      .tab-panel-header {
+        flex-direction: column;
+      }
+
+      .actions {
+        grid-template-columns: 1fr;
+      }
+
+      .fab {
+        width: 58px;
+        height: 58px;
+        right: max(18px, calc(env(safe-area-inset-right, 0px) + 14px));
+        bottom: max(18px, calc(env(safe-area-inset-bottom, 0px) + 14px));
+        font-size: 1.85rem;
+      }
+
+      .modal-dialog.modal-form-dialog {
+        position: relative;
+        right: auto;
+        bottom: auto;
+        margin: 16px auto;
+        width: min(760px, calc(100vw - 32px));
+        max-height: calc(100vh - 32px);
+      }
+    }
+  
+
+/* ====== PDF STYLE v0.4.1 ====== */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm;
+  }
+
+  html,
+  body {
+    background: transparent !important;
+  }
+
+  body {
+    margin: 0 !important;
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-size: 10px !important;
+    line-height: 1.1 !important;
+    color: #000 !important;
+  }
+
+  .print-watermark {
+    display: block !important;
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    width: 400px !important;
+    height: 400px !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 0 !important;
+    opacity: 0.07 !important;
+    pointer-events: none !important;
+  }
+
+  .print-watermark img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+  }
+
+  .document-credit {
+    display: block !important;
+    position: fixed !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 2 !important;
+    font: 400 7px/1 Arial, Helvetica, sans-serif !important;
+    color: #555 !important;
+  }
+
+  .wrap {
+    max-width: none !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    display: block !important;
+  }
+
+  .hero {
+    margin: 0 0 6px 0 !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+
+  .brand-slot,
+  .more-menu-wrap,
+  .hero-actions,
+  .save-indicator,
+  .panel,
+  .toolbar,
+  .status,
+  .footer-note,
+  .modal,
+  .fab,
+  .small,
+  .empty {
+    display: none !important;
+  }
+
+  .championship-name {
+    display: block !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 0 4px 0 !important;
+    font: 700 15px/1 Arial, Helvetica, sans-serif !important;
+    color: #000 !important;
+  }
+
+  .championship-field {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .layout,
+  .content,
+  .card,
+  .athletes-section,
+  .table-wrap {
+    display: block !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    min-height: 0 !important;
+    height: auto !important;
+    background: transparent !important;
+  }
+
+  .content h2 {
+    margin: 0 0 4px 0 !important;
+    font: 700 11px/1.1 Arial, Helvetica, sans-serif !important;
+    color: #000 !important;
+  }
+
+  .category-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px 10px !important;
+    align-items: start !important;
+    margin: 0 !important;
+  }
+
+  .category-block {
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 2px solid #000 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .category-block h3 {
+    margin: 0 !important;
+    padding: 2px 6px !important;
+    border-bottom: 2px solid #000 !important;
+    font: 700 9px/1.1 Arial, Helvetica, sans-serif !important;
+    text-align: center !important;
+    min-height: 18px !important;
+  }
+
+  .mini-table,
+  table {
+    width: 100% !important;
+    min-width: 0 !important;
+    border-collapse: collapse !important;
+    table-layout: fixed !important;
+    margin: 0 !important;
+  }
+
+  .mini-table th,
+  .mini-table td,
+  th,
+  td {
+    border: 1px solid #000 !important;
+    padding: 1px 4px !important;
+    font: 400 8px/1.05 Arial, Helvetica, sans-serif !important;
+    color: #000 !important;
+    height: 17px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    background: #fff !important;
+  }
+
+  .mini-table thead th,
+  thead th {
+    font-weight: 700 !important;
+    text-align: center !important;
+    height: 16px !important;
+    padding: 1px 3px !important;
+  }
+
+  .mini-table th:nth-child(1),
+  .mini-table td:nth-child(1) {
+    width: 34px !important;
+    text-align: center !important;
+  }
+
+  .mini-table th:nth-child(2),
+  .mini-table td:nth-child(2) {
+    width: 40px !important;
+    text-align: center !important;
+  }
+
+  .mini-table th:last-child,
+  .mini-table td:last-child {
+    width: 40px !important;
+    text-align: center !important;
+  }
+
+  .mini-table th:nth-child(3),
+  .mini-table td:nth-child(3) {
+    width: auto !important;
+    text-align: left !important;
+  }
+
+  .athlete-link {
+    color: #000 !important;
+    text-decoration: none !important;
+    font-weight: 400 !important;
+  }
+
+
+  .filler-row {
+    display: table-row !important;
+  }
+
+  .category-grid > * {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .overall-print-page {
+    display: block !important;
+    break-before: page !important;
+    page-break-before: always !important;
+  }
+
+  .overall-print-page h2 {
+    margin: 0 0 6px 0 !important;
+    font: 700 13px/1.1 Arial, Helvetica, sans-serif !important;
+    text-align: center !important;
+  }
+
+  .overall-print-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    align-items: start !important;
+  }
+}
+
+.overall-print-page { display: none; }
+
+
+/* Hide Nota column on screen */
+.mini-table th.col-nota,
+.mini-table td.col-nota { display: none; }
+
+/* Show Nota column on print */
+@media print {
+  .app-tabs,
+  #athletesTab,
+  #categoriesTab {
+    display: none !important;
+  }
+
+  #registrationsTab {
+    display: block !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
+  .mini-table th.col-nota,
+  .mini-table td.col-nota { display: table-cell !important; }
+}
+
+</style>
+</head>
+<body>
+  <div class="print-watermark" aria-hidden="true">
+    <img src="assets/img/logo.png" alt="" />
+  </div>
+  <div class="document-credit">Súmula Legends v0.4.1 • Desenvolvido por LT ARTS</div>
+  <div class="wrap">
+    <div class="hero card">
+      <div class="more-menu-wrap">
+        <button id="moreMenuBtn" class="main-menu-button" type="button" aria-label="Menu principal" aria-haspopup="menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+        <div id="moreMenu" class="more-menu main-menu" role="menu" hidden>
+          <button id="newChampionshipBtn" class="menu-item" type="button" role="menuitem"><span>Novo campeonato</span><span class="menu-shortcut">Ctrl+N</span></button>
+          <button id="openChampionshipBtn" class="menu-item" type="button" role="menuitem" disabled><span>Abrir campeonato</span></button>
+          <button id="saveChampionshipBtn" class="menu-item" type="button" role="menuitem"><span>Salvar campeonato</span><span class="menu-shortcut">Ctrl+S</span></button>
+          <div class="menu-divider"></div>
+          <button id="menuImportExcelBtn" class="menu-item" type="button" role="menuitem"><span>Importar Excel</span></button>
+          <button id="exportMenuBtn" class="menu-item" type="button" role="menuitem" aria-haspopup="menu" aria-expanded="false" aria-controls="exportSubmenu"><span>Exportar</span><span aria-hidden="true">›</span></button>
+          <div id="exportSubmenu" class="export-submenu" role="menu" hidden>
+            <button id="exportPdfBtn" class="menu-item" type="button" role="menuitem">Exportar súmula em PDF</button>
+            <button id="exportExcelBtn" class="menu-item" type="button" role="menuitem">Exportar para Excel</button>
+          </div>
+          <div class="menu-divider"></div>
+          <button id="openSettingsBtn" class="menu-item" type="button" role="menuitem">Configurações</button>
+          <button id="openAboutBtn" class="menu-item" type="button" role="menuitem">Sobre</button>
+        </div>
+      </div>
+
+      <div class="brand-slot" aria-label="Logo da federação">
+        <img id="brandLogo" src="assets/img/logo.png" alt="Logo Legends" />
+      </div>
+
+      <div class="championship-field">
+        <input
+          id="championshipName"
+          class="championship-name"
+          type="text"
+          value="NIGHT OF CHAMPIONS 2026"
+          placeholder="Nome do campeonato"
+          aria-label="Nome do campeonato"
+        />
+        <span id="saveIndicator" class="save-indicator" hidden>Não salvo</span>
+      </div>
+
+      <div class="hero-actions">
+        <input id="excelInput" type="file" accept=".xlsx,.xls" hidden />
+        <button id="printBtn" class="primary" type="button">Gerar súmula em PDF</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <main class="card content">
+        <nav class="app-tabs" role="tablist" aria-label="Áreas do sistema">
+          <button id="registrationsTabButton" class="app-tab" type="button" role="tab" aria-selected="true" aria-controls="registrationsTab" data-tab="registrationsTab">Inscrições</button>
+          <button id="athletesTabButton" class="app-tab" type="button" role="tab" aria-selected="false" aria-controls="athletesTab" data-tab="athletesTab" tabindex="-1">Atletas</button>
+          <button id="categoriesTabButton" class="app-tab" type="button" role="tab" aria-selected="false" aria-controls="categoriesTab" data-tab="categoriesTab" tabindex="-1">Categorias</button>
+        </nav>
+
+        <section id="registrationsTab" class="tab-panel active" role="tabpanel" aria-labelledby="registrationsTabButton">
+          <div class="toolbar">
+            <div class="toolbar-left"><h2 style="margin:0;">Inscrições por categoria</h2></div>
+            <div class="toolbar-right">
+              <div class="toolbar-search"><input id="panelSearch" type="text" placeholder="Filtrar por número, nome ou categoria" /></div>
+            </div>
+          </div>
+          <div id="status" class="status"></div>
+          <div class="category-grid" id="categoryLists"></div>
+          <section class="overall-print-page" id="overallPrintPage" aria-label="Categorias Overall para preenchimento manual">
+            <h2>Categorias Overall</h2>
+            <div class="overall-print-grid" id="overallPrintLists"></div>
+          </section>
+        </section>
+
+        <section id="athletesTab" class="tab-panel" role="tabpanel" aria-labelledby="athletesTabButton" hidden>
+          <div class="toolbar">
+            <div class="toolbar-left">
+              <div>
+                <h2 style="margin:0 0 5px;">Atletas</h2>
+                <p class="small" style="margin:0;">Todos os atletas cadastrados com suas respectivas categorias.</p>
+              </div>
+            </div>
+            <div class="toolbar-right">
+              <div class="toolbar-search">
+                <input id="athleteSearch" type="text" placeholder="Filtrar por número, nome ou categoria" />
+              </div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th style="width:110px;">Número</th><th>Nome</th><th>Categorias inscritas</th><th class="actions-column">Ações</th></tr></thead>
+              <tbody id="athletesBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="categoriesTab" class="tab-panel" role="tabpanel" aria-labelledby="categoriesTabButton" hidden>
+          <div class="toolbar">
+            <div class="toolbar-left">
+              <div>
+                <h2 style="margin:0 0 5px;">Categorias</h2>
+                <p class="small" style="margin:0;">Defina quais categorias estarão disponíveis neste show.</p>
+              </div>
+            </div>
+            <div class="toolbar-right category-toolbar-right">
+              <div class="toolbar-search">
+                <input id="categorySearch" type="text" placeholder="Filtrar categorias" />
+              </div>
+              <button id="toggleCategoryFormBtn" class="primary category-add-button" type="button" aria-label="Adicionar categoria" aria-expanded="false" aria-controls="categoryManagerForm">+</button>
+              <div id="categoryManagerForm" class="category-manager-form" hidden>
+                <div class="field">
+                  <label for="categoryNameInput">Nome da categoria</label>
+                  <input id="categoryNameInput" type="text" placeholder="Ex.: Men's Physique Master" autocomplete="off" />
+                </div>
+                <div class="category-manager-actions">
+                  <button id="cancelCategoryEditBtn" class="secondary" type="button" hidden>Cancelar</button>
+                  <button id="saveCategoryBtn" class="primary" type="button">Adicionar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Categoria</th><th style="width:130px;">Tipo</th><th style="width:130px;">Atletas</th><th class="actions-column">Ações</th></tr></thead>
+              <tbody id="categoryManagerBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+
+
+  <button id="openRegistrationBtn" class="fab" type="button" aria-label="Cadastrar atleta" data-tooltip="Cadastrar atleta">
+    <span class="fab-plus" aria-hidden="true">+</span>
+    <span class="fab-label">Cadastrar atleta</span>
+  </button>
+
+  <div id="registrationModal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-registration-modal="true"></div>
+    <div class="modal-dialog modal-form-dialog card" role="dialog" aria-modal="true" aria-labelledby="registrationModalTitle">
+      <div class="modal-header">
+        <div>
+          <h2 id="registrationModalTitle" style="margin:0;">Cadastro de atleta</h2>
+          <p class="small" style="margin:6px 0 0;">Preencha número, nome e categorias para incluir um novo atleta na súmula.</p>
+        </div>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-form">
+          <div class="field">
+            <div class="label-row">
+              <label for="numero">Número do atleta</label>
+              <button id="incrementBtn" class="inline-link" type="button">Incrementar</button>
+            </div>
+            <input id="numero" type="number" min="1" placeholder="Ex.: 101" />
+          </div>
+
+          <div class="field">
+            <label for="nome">Nome do atleta</label>
+            <input id="nome" type="text" placeholder="Ex.: Bernardo Bolt" />
+          </div>
+
+          <div class="field">
+            <label>Categorias</label>
+            <div id="registrationSelectedPills" class="pill-row" aria-live="polite"></div>
+          </div>
+
+          <div class="field">
+            <label for="busca">Busca rápida nas categorias</label>
+            <input id="busca" type="text" placeholder="Digite para filtrar categorias" />
+          </div>
+
+          <div id="categories" class="categories"></div>
+
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="saveBtn" class="primary" type="button">Cadastrar atleta</button>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="deleteAthleteModal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-delete-athlete-modal="true"></div>
+    <div class="modal-dialog modal-sm modal-centered card" role="dialog" aria-modal="true" aria-labelledby="deleteAthleteModalTitle">
+      <div class="modal-header">
+        <div>
+          <h2 id="deleteAthleteModalTitle" style="margin:0;">Excluir atleta?</h2>
+          <p id="deleteAthleteMessage" class="small" style="margin:6px 0 0;"></p>
+        </div>
+        <button id="closeDeleteAthleteBtn" class="secondary icon-btn" type="button" aria-label="Fechar confirmação">✕</button>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelDeleteAthleteBtn" class="secondary" type="button">Cancelar</button>
+        <button id="confirmDeleteAthleteBtn" class="danger" type="button">Excluir atleta</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="deleteCategoryModal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-delete-category-modal="true"></div>
+    <div class="modal-dialog modal-sm card" role="dialog" aria-modal="true" aria-labelledby="deleteCategoryModalTitle">
+      <div class="modal-header">
+        <div>
+          <h2 id="deleteCategoryModalTitle" style="margin:0;">Excluir categoria?</h2>
+          <p id="deleteCategoryMessage" class="small" style="margin:6px 0 0;"></p>
+        </div>
+        <button id="closeDeleteCategoryBtn" class="secondary icon-btn" type="button" aria-label="Fechar confirmação">✕</button>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelDeleteCategoryBtn" class="secondary" type="button">Cancelar</button>
+        <button id="confirmDeleteCategoryBtn" class="danger" type="button">Excluir categoria</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="categoryAthletesModal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-category-athletes-modal="true"></div>
+    <div class="modal-dialog modal-sm card" role="dialog" aria-modal="true" aria-labelledby="categoryAthletesModalTitle">
+      <div class="modal-header">
+        <div>
+          <h2 id="categoryAthletesModalTitle" style="margin:0;">Atletas da categoria</h2>
+          <p id="categoryAthletesModalSubtitle" class="small" style="margin:6px 0 0;"></p>
+        </div>
+        <button id="closeCategoryAthletesBtn" class="secondary icon-btn" type="button" aria-label="Fechar atletas da categoria">✕</button>
+      </div>
+      <div class="modal-body" style="padding-top:18px;">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th style="width:120px;">Número</th><th>Nome</th></tr></thead>
+            <tbody id="categoryAthletesBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="editModal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-edit-modal="true"></div>
+    <div class="modal-dialog modal-sm card" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
+      <div class="modal-header">
+        <div>
+          <h2 id="editModalTitle" style="margin:0;">Editar atleta: <span id="editModalName"></span></h2>
+          <p class="small" style="margin:6px 0 0;">Ajuste número, nome e categorias sem sair da base de atletas.</p>
+        </div>
+        <button id="closeEditBtn" class="secondary icon-btn" type="button" aria-label="Fechar edição de atleta">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-form">
+          <div class="field">
+            <label for="editNumero">Número do atleta</label>
+            <input id="editNumero" type="number" min="1" placeholder="Ex.: 101" />
+          </div>
+
+          <div class="field">
+            <label for="editNome">Nome do atleta</label>
+            <input id="editNome" type="text" placeholder="Ex.: Bernardo Bolt" />
+          </div>
+
+          <div class="field">
+            <label>Categorias</label>
+            <div id="editSelectedPills" class="pill-row" aria-live="polite"></div>
+          </div>
+
+          <div class="field">
+            <label for="editBusca">Busca rápida nas categorias</label>
+            <input id="editBusca" type="text" placeholder="Digite para filtrar categorias" />
+          </div>
+
+          <div id="editCategories" class="categories"></div>
+
+          <div class="modal-actions">
+            <button id="cancelEditBtn" class="secondary" type="button">Cancelar</button>
+            <button id="saveEditBtn" class="primary" type="button">Salvar alterações</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="newChampionshipModal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-new-championship-modal="true"></div>
+    <div class="modal-dialog modal-sm modal-centered card" role="dialog" aria-modal="true" aria-labelledby="newChampionshipModalTitle">
+      <div class="modal-header">
+        <div>
+          <h2 id="newChampionshipModalTitle" style="margin:0;">Criar novo campeonato?</h2>
+          <p id="newChampionshipModalMessage" class="small" style="margin:6px 0 0;">As alterações que ainda não foram salvas poderão ser perdidas.</p>
+        </div>
+        <button id="closeNewChampionshipBtn" class="secondary icon-btn" type="button" aria-label="Fechar confirmação">✕</button>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelNewChampionshipBtn" class="secondary" type="button">Cancelar</button>
+        <button id="confirmNewChampionshipBtn" class="danger" type="button">Descartar e criar novo</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="openChampionshipModal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-open-championship-modal="true"></div>
+    <div class="modal-dialog modal-sm modal-centered card" role="dialog" aria-modal="true" aria-labelledby="openChampionshipModalTitle">
+      <div class="modal-header">
+        <div><h2 id="openChampionshipModalTitle" style="margin:0;">Abrir campeonato</h2><p class="small" style="margin:6px 0 0;">Campeonatos salvos recentemente aparecerão aqui.</p></div>
+        <button id="closeOpenChampionshipBtn" class="secondary icon-btn" type="button" aria-label="Fechar campeonatos">✕</button>
+      </div>
+      <div class="modal-body" style="padding-top:18px;"><div id="recentChampionshipsList"></div></div>
+    </div>
+  </div>
+
+  <div id="settingsModal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-settings-modal="true"></div>
+    <div class="modal-dialog modal-sm modal-centered card" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle">
+      <div class="modal-header">
+        <div><h2 id="settingsModalTitle" style="margin:0;">Configurações</h2><p class="small" style="margin:6px 0 0;">Personalize a aparência do aplicativo.</p></div>
+        <button id="closeSettingsBtn" class="secondary icon-btn" type="button" aria-label="Fechar configurações">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="theme-options" role="radiogroup" aria-label="Tema da interface">
+          <label class="theme-option"><input type="radio" name="themeSetting" value="light" /><span><strong>Claro</strong><br><span class="small">Interface sempre clara</span></span></label>
+          <label class="theme-option"><input type="radio" name="themeSetting" value="dark" /><span><strong>Escuro</strong><br><span class="small">Interface sempre escura</span></span></label>
+          <label class="theme-option"><input type="radio" name="themeSetting" value="auto" /><span><strong>Automático</strong><br><span class="small">Acompanha o tema do sistema</span></span></label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="aboutModal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-about-modal="true"></div>
+    <div class="modal-dialog modal-sm modal-centered card" role="dialog" aria-modal="true" aria-labelledby="aboutModalTitle">
+      <div class="modal-header">
+        <h2 id="aboutModalTitle" style="margin:0;">Sobre</h2>
+        <button id="closeAboutBtn" class="secondary icon-btn" type="button" aria-label="Fechar sobre">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="about-brand">
+          <img class="about-app-logo" src="assets/icons/Logo_Original.png" alt="Logo do aplicativo Súmula Legends" />
+          <h2 style="margin:16px 0 6px;">Súmula Legends</h2>
+          <p class="small" style="margin:0;">Versão 0.4.1</p>
+          <img id="aboutLogo" class="about-federation-logo" src="assets/img/logo.png" alt="Logo Nordeste Legends" />
+          <p style="margin:0;"><strong>Desenvolvido por LT ARTS</strong></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastWrap" class="toast-wrap" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="assets/vendor/xlsx.full.min.js"></script>
+  <script>
+    const STORAGE_KEY = "sistema_inscricao_atletas_v5";
+    const LEGACY_STORAGE_KEYS = ["sistema_inscricao_atletas_v4", "sistema_inscricao_atletas_v3"];
+    const THEME_STORAGE_KEY = "sumula_legends_theme";
+    const CHAMPIONSHIP_LIBRARY_KEY = "sumula_legends_championships_v1";
+    const WORKSPACE_META_KEY = "sumula_legends_workspace_v1";
+
+    const storedThemeSetting = localStorage.getItem(THEME_STORAGE_KEY);
+    let themeSetting = ['light', 'dark', 'auto'].includes(storedThemeSetting) ? storedThemeSetting : 'auto';
+    const systemThemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    if (themeSetting === 'dark' || (themeSetting === 'auto' && systemThemeQuery.matches)) {
+      document.documentElement.dataset.theme = 'dark';
+    }
+
+    let defaultCategories = [];
+
+    let draftSelectedCategories = [];
+    let editDraftSelectedCategories = [];
+    let editingAthleteNumber = null;
+    let editingCategoryName = null;
+    let pendingDeleteCategoryName = null;
+    let pendingDeleteAthleteNumber = null;
+    let pendingConfirmedAction = null;
+    let championshipLibrary = { championships: [], activeId: null };
+    let activeChampionshipId = null;
+    let isChampionshipDirty = false;
+
+    const els = {
+      brandLogo: document.getElementById("brandLogo"),
+      numero: document.getElementById("numero"),
+      nome: document.getElementById("nome"),
+      busca: document.getElementById("busca"),
+      categories: document.getElementById("categories"),
+      registrationSelectedPills: document.getElementById("registrationSelectedPills"),
+      toastWrap: document.getElementById("toastWrap"),
+      athletesBody: document.getElementById("athletesBody"),
+      categoryLists: document.getElementById("categoryLists"),
+      overallPrintLists: document.getElementById("overallPrintLists"),
+      status: document.getElementById("status"),
+      saveBtn: document.getElementById("saveBtn"),
+      incrementBtn: document.getElementById("incrementBtn"),
+      excelInput: document.getElementById("excelInput"),
+      printBtn: document.getElementById("printBtn"),
+      moreMenuBtn: document.getElementById("moreMenuBtn"),
+      moreMenu: document.getElementById("moreMenu"),
+      championshipName: document.getElementById("championshipName"),
+      saveIndicator: document.getElementById("saveIndicator"),
+      newChampionshipBtn: document.getElementById("newChampionshipBtn"),
+      openChampionshipBtn: document.getElementById("openChampionshipBtn"),
+      saveChampionshipBtn: document.getElementById("saveChampionshipBtn"),
+      menuImportExcelBtn: document.getElementById("menuImportExcelBtn"),
+      exportMenuBtn: document.getElementById("exportMenuBtn"),
+      exportSubmenu: document.getElementById("exportSubmenu"),
+      exportPdfBtn: document.getElementById("exportPdfBtn"),
+      exportExcelBtn: document.getElementById("exportExcelBtn"),
+      openSettingsBtn: document.getElementById("openSettingsBtn"),
+      openAboutBtn: document.getElementById("openAboutBtn"),
+      openRegistrationBtn: document.getElementById("openRegistrationBtn"),
+      registrationModal: document.getElementById("registrationModal"),
+      editModal: document.getElementById("editModal"),
+      closeEditBtn: document.getElementById("closeEditBtn"),
+      cancelEditBtn: document.getElementById("cancelEditBtn"),
+      saveEditBtn: document.getElementById("saveEditBtn"),
+      editNumero: document.getElementById("editNumero"),
+      editNome: document.getElementById("editNome"),
+      editBusca: document.getElementById("editBusca"),
+      editCategories: document.getElementById("editCategories"),
+      editSelectedPills: document.getElementById("editSelectedPills"),
+      panelSearch: document.getElementById("panelSearch"),
+      athleteSearch: document.getElementById("athleteSearch"),
+      categorySearch: document.getElementById("categorySearch"),
+      tabButtons: [...document.querySelectorAll('.app-tab')],
+      tabPanels: [...document.querySelectorAll('.tab-panel')],
+      categoryNameInput: document.getElementById("categoryNameInput"),
+      categoryManagerForm: document.getElementById("categoryManagerForm"),
+      toggleCategoryFormBtn: document.getElementById("toggleCategoryFormBtn"),
+      saveCategoryBtn: document.getElementById("saveCategoryBtn"),
+      cancelCategoryEditBtn: document.getElementById("cancelCategoryEditBtn"),
+      categoryManagerBody: document.getElementById("categoryManagerBody"),
+      deleteAthleteModal: document.getElementById("deleteAthleteModal"),
+      deleteAthleteMessage: document.getElementById("deleteAthleteMessage"),
+      closeDeleteAthleteBtn: document.getElementById("closeDeleteAthleteBtn"),
+      cancelDeleteAthleteBtn: document.getElementById("cancelDeleteAthleteBtn"),
+      confirmDeleteAthleteBtn: document.getElementById("confirmDeleteAthleteBtn"),
+      deleteCategoryModal: document.getElementById("deleteCategoryModal"),
+      deleteCategoryMessage: document.getElementById("deleteCategoryMessage"),
+      closeDeleteCategoryBtn: document.getElementById("closeDeleteCategoryBtn"),
+      cancelDeleteCategoryBtn: document.getElementById("cancelDeleteCategoryBtn"),
+      confirmDeleteCategoryBtn: document.getElementById("confirmDeleteCategoryBtn"),
+      categoryAthletesModal: document.getElementById("categoryAthletesModal"),
+      categoryAthletesModalTitle: document.getElementById("categoryAthletesModalTitle"),
+      categoryAthletesModalSubtitle: document.getElementById("categoryAthletesModalSubtitle"),
+      categoryAthletesBody: document.getElementById("categoryAthletesBody"),
+      closeCategoryAthletesBtn: document.getElementById("closeCategoryAthletesBtn"),
+      newChampionshipModal: document.getElementById("newChampionshipModal"),
+      newChampionshipModalTitle: document.getElementById("newChampionshipModalTitle"),
+      newChampionshipModalMessage: document.getElementById("newChampionshipModalMessage"),
+      closeNewChampionshipBtn: document.getElementById("closeNewChampionshipBtn"),
+      cancelNewChampionshipBtn: document.getElementById("cancelNewChampionshipBtn"),
+      confirmNewChampionshipBtn: document.getElementById("confirmNewChampionshipBtn"),
+      openChampionshipModal: document.getElementById("openChampionshipModal"),
+      closeOpenChampionshipBtn: document.getElementById("closeOpenChampionshipBtn"),
+      recentChampionshipsList: document.getElementById("recentChampionshipsList"),
+      settingsModal: document.getElementById("settingsModal"),
+      closeSettingsBtn: document.getElementById("closeSettingsBtn"),
+      themeSettingInputs: [...document.querySelectorAll('input[name="themeSetting"]')],
+      aboutModal: document.getElementById("aboutModal"),
+      closeAboutBtn: document.getElementById("closeAboutBtn"),
+      aboutLogo: document.getElementById("aboutLogo")
+    };
+
+    function isDarkTheme() {
+      return document.documentElement.dataset.theme === 'dark';
+    }
+
+    function applyThemeSetting(nextSetting = themeSetting) {
+      themeSetting = nextSetting;
+      const dark = themeSetting === 'dark' || (themeSetting === 'auto' && systemThemeQuery.matches);
+      document.documentElement.toggleAttribute('data-theme', dark);
+      if (dark) document.documentElement.dataset.theme = 'dark';
+      else delete document.documentElement.dataset.theme;
+      localStorage.setItem(THEME_STORAGE_KEY, themeSetting);
+      const logoSrc = dark ? 'assets/img/logo_dark.png' : 'assets/img/logo.png';
+      els.brandLogo.src = logoSrc;
+      els.aboutLogo.src = logoSrc;
+      els.themeSettingInputs.forEach(input => { input.checked = input.value === themeSetting; });
+    }
+
+    function positionMoreMenu() {
+      const buttonRect = els.moreMenuBtn.getBoundingClientRect();
+      const menuWidth = els.moreMenu.offsetWidth;
+      const left = Math.max(12, Math.min(window.innerWidth - menuWidth - 12, buttonRect.left));
+      els.moreMenu.style.left = `${left}px`;
+      els.moreMenu.style.top = `${buttonRect.bottom + 8}px`;
+      if (!els.exportSubmenu.hidden) positionExportSubmenu();
+    }
+
+    function positionExportSubmenu() {
+      const buttonRect = els.exportMenuBtn.getBoundingClientRect();
+      const submenuWidth = els.exportSubmenu.offsetWidth;
+      const submenuHeight = els.exportSubmenu.offsetHeight;
+      const gap = 6;
+      const edge = 8;
+      const opensRight = buttonRect.right + gap + submenuWidth <= window.innerWidth - edge;
+      const left = opensRight
+        ? buttonRect.right + gap
+        : Math.max(edge, buttonRect.left - submenuWidth - gap);
+      const top = Math.max(edge, Math.min(buttonRect.top, window.innerHeight - submenuHeight - edge));
+      els.exportSubmenu.style.left = `${left}px`;
+      els.exportSubmenu.style.top = `${top}px`;
+    }
+
+    function closeMoreMenu() {
+      els.moreMenu.hidden = true;
+      els.moreMenuBtn.setAttribute('aria-expanded', 'false');
+      els.exportSubmenu.hidden = true;
+      els.exportMenuBtn.setAttribute('aria-expanded', 'false');
+    }
+
+    function toggleMoreMenu() {
+      const willOpen = els.moreMenu.hidden;
+      els.moreMenu.hidden = !willOpen;
+      els.moreMenuBtn.setAttribute('aria-expanded', String(willOpen));
+      if (willOpen) {
+        positionMoreMenu();
+        els.newChampionshipBtn.focus();
+      }
+    }
+
+    applyThemeSetting(themeSetting);
+    systemThemeQuery.addEventListener('change', () => {
+      if (themeSetting === 'auto') applyThemeSetting('auto');
+    });
+
+    const CATEGORY_REFERENCE_ORDER = [
+      'Bodybuilder Estreantes',
+      'Bodybuilder Novice',
+      'Bodybuilder Junior',
+      'Bodybuilder Master',
+      'Bodybuilder Até 70kg',
+      'Bodybuilder Até 75kg',
+      'Bodybuilder Até 80kg',
+      'Bodybuilder Até 90kg',
+      'Bodybuilder Ate 100kg',
+      'Bodybuilder Acima 100kg',
+      'Mens Phys Estreantes',
+      'Mens Phys Novice',
+      'Mens Phys Junior',
+      'Mens Physique Master',
+      'Mens Physique Até 170cm',
+      'Mens Physique Até 174cm',
+      'Mens Physique até 178cm',
+      'Mens Physique acima 178cm',
+      "Woman's Physique",
+      'Fit Model',
+      'Figure',
+      'Especial',
+      'Infantil',
+      'Trans Masculino',
+      'Trans Feminino',
+      'Bodyshape',
+      'Biquini Estreantes',
+      'Biquini Novice',
+      'Biquini Master',
+      'Biquini ate 160cm',
+      'Biquini ate 165cm',
+      'Biquini acima 165cm',
+      'Wellness Estreantes',
+      'Wellness Novice',
+      'Wellness Master',
+      'Wellness até 158cm',
+      'Wellness até 165cm',
+      'Wellness acima 165cm',
+      'Classic Physique Estreantes',
+      'Classic Physique Novice',
+      'Classic Physique Junior',
+      'Classic Physique Master',
+      'Classic Physique até 170cm',
+      'Classic Physique até 174cm',
+      'Classic Physique até 178cm',
+      'Classic Physique acima 178cm',
+      'Overall Bodybuilder',
+      'Overall Mens Physique',
+      'Overall Biquini',
+      'Overall Welness',
+      'Overall Classic'
+    ];
+
+    const CATEGORY_REFERENCE_INDEX = new Map(
+      CATEGORY_REFERENCE_ORDER.map((category, index) => [normalizeSearchText(category), index])
+    );
+    defaultCategories = [...CATEGORY_REFERENCE_ORDER];
+
+    function isOverallCategory(category) {
+      return normalizeSearchText(category).startsWith('overall ');
+    }
+
+    function compareCategories(a, b) {
+      const normalizedA = normalizeSearchText(a);
+      const normalizedB = normalizeSearchText(b);
+      const indexA = CATEGORY_REFERENCE_INDEX.get(normalizedA);
+      const indexB = CATEGORY_REFERENCE_INDEX.get(normalizedB);
+      const hasIndexA = Number.isInteger(indexA);
+      const hasIndexB = Number.isInteger(indexB);
+      const overallA = isOverallCategory(a);
+      const overallB = isOverallCategory(b);
+
+      if (hasIndexA && hasIndexB) return indexA - indexB;
+      if (hasIndexA && !hasIndexB) return overallB ? -1 : -1;
+      if (!hasIndexA && hasIndexB) return overallA ? 1 : 1;
+      if (overallA !== overallB) return overallA ? 1 : -1;
+      return String(a).localeCompare(String(b), 'pt-BR');
+    }
+
+    function sortCategoriesByReference(categories) {
+      return [...categories].sort(compareCategories);
+    }
+
+    function parseStoredState(raw) {
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      const storedAthletes = Array.isArray(parsed?.athletes) ? parsed.athletes : [];
+      const storedCategories = Array.isArray(parsed?.categories) ? parsed.categories : [];
+      const derivedCategories = sortCategoriesByReference([...new Set(
+        storedAthletes.flatMap(athlete => Array.isArray(athlete?.categorias) ? athlete.categorias : [])
+      )].map(normalizeCategoryName).filter(Boolean));
+
+      return {
+        athletes: storedAthletes,
+        categories: sortCategoriesByReference(
+          (storedCategories.length ? storedCategories : derivedCategories)
+            .map(normalizeCategoryName)
+            .filter(Boolean)
+        )
+      };
+    }
+
+    function loadState() {
+      try {
+        const currentRaw = localStorage.getItem(STORAGE_KEY);
+        const currentState = parseStoredState(currentRaw);
+        if (currentState) {
+          return currentState;
+        }
+
+        for (const legacyKey of LEGACY_STORAGE_KEYS) {
+          const legacyRaw = localStorage.getItem(legacyKey);
+          const legacyState = parseStoredState(legacyRaw);
+          if (legacyState) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(legacyState));
+            return legacyState;
+          }
+        }
+
+        return { athletes: [], categories: [...defaultCategories] };
+      } catch {
+        return { athletes: [], categories: [...defaultCategories] };
+      }
+    }
+
+    function loadChampionshipLibrary() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(CHAMPIONSHIP_LIBRARY_KEY) || '{}');
+        return {
+          championships: Array.isArray(parsed.championships) ? parsed.championships : [],
+          activeId: typeof parsed.activeId === 'string' ? parsed.activeId : null
+        };
+      } catch {
+        return { championships: [], activeId: null };
+      }
+    }
+
+    function loadWorkspaceMeta() {
+      try {
+        return JSON.parse(localStorage.getItem(WORKSPACE_META_KEY) || 'null');
+      } catch {
+        return null;
+      }
+    }
+
+    function cloneState(source) {
+      return JSON.parse(JSON.stringify(source));
+    }
+
+    let state = loadState();
+    championshipLibrary = loadChampionshipLibrary();
+    const restoredWorkspaceMeta = loadWorkspaceMeta();
+    activeChampionshipId = restoredWorkspaceMeta?.activeId || championshipLibrary.activeId || null;
+    if (!championshipLibrary.championships.some(item => item.id === activeChampionshipId)) activeChampionshipId = null;
+    if (restoredWorkspaceMeta?.name) els.championshipName.value = restoredWorkspaceMeta.name;
+    isChampionshipDirty = typeof restoredWorkspaceMeta?.dirty === 'boolean'
+      ? restoredWorkspaceMeta.dirty
+      : state.athletes.length > 0 && !activeChampionshipId;
+
+    function persistChampionshipLibrary() {
+      championshipLibrary.activeId = activeChampionshipId;
+      localStorage.setItem(CHAMPIONSHIP_LIBRARY_KEY, JSON.stringify(championshipLibrary));
+    }
+
+    function persistWorkspaceMeta() {
+      localStorage.setItem(WORKSPACE_META_KEY, JSON.stringify({
+        activeId: activeChampionshipId,
+        name: els.championshipName.value.trim(),
+        dirty: isChampionshipDirty
+      }));
+    }
+
+    function getAvailableCategories() {
+      const baseCategories = Array.isArray(state.categories) ? state.categories : [];
+      const athleteCategories = state.athletes.flatMap(athlete => Array.isArray(athlete.categorias) ? athlete.categorias : []);
+
+      return sortCategoriesByReference([...new Set([...baseCategories, ...athleteCategories].map(normalizeCategoryName).filter(Boolean))]);
+    }
+
+    function refreshStoredCategories() {
+      state.categories = getAvailableCategories();
+    }
+
+    function saveState() {
+      refreshStoredCategories();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      markUnsaved();
+    }
+
+    function markUnsaved() {
+      isChampionshipDirty = true;
+      els.saveIndicator.textContent = 'Não salvo';
+      els.saveIndicator.hidden = false;
+      persistWorkspaceMeta();
+    }
+
+    function markSaved() {
+      isChampionshipDirty = false;
+      els.saveIndicator.textContent = 'Salvo';
+      els.saveIndicator.hidden = false;
+      persistWorkspaceMeta();
+      setTimeout(() => {
+        if (els.saveIndicator.textContent === 'Salvo') els.saveIndicator.hidden = true;
+      }, 1800);
+    }
+
+    function showCurrentDirtyState() {
+      els.saveIndicator.textContent = 'Não salvo';
+      els.saveIndicator.hidden = !isChampionshipDirty;
+    }
+
+    function createChampionshipId() {
+      return typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+        ? crypto.randomUUID()
+        : `championship-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function updateOpenChampionshipAvailability() {
+      els.openChampionshipBtn.disabled = championshipLibrary.championships.length === 0;
+    }
+
+    function renderRecentChampionships() {
+      const championships = [...championshipLibrary.championships]
+        .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
+
+      if (!championships.length) {
+        els.recentChampionshipsList.innerHTML = '<div class="empty">Nenhum campeonato salvo ainda.</div>';
+        return;
+      }
+
+      els.recentChampionshipsList.innerHTML = `<div class="championship-list">${championships.map(item => {
+        const athleteCount = Array.isArray(item.athletes) ? item.athletes.length : 0;
+        const updatedLabel = item.updatedAt
+          ? new Date(item.updatedAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
+          : 'Data indisponível';
+        return `
+          <div class="championship-list-item">
+            <div>
+              <strong>${escapeHtml(item.name || 'Campeonato sem nome')}</strong>
+              <div class="championship-list-meta">${athleteCount} atleta${athleteCount === 1 ? '' : 's'} • Atualizado em ${escapeHtml(updatedLabel)}</div>
+            </div>
+            <button class="primary" type="button" onclick="requestOpenChampionship('${escapeJs(item.id)}')">Abrir</button>
+          </div>
+        `;
+      }).join('')}</div>`;
+    }
+
+    function saveCurrentChampionship() {
+      closeMoreMenu();
+      const name = els.championshipName.value.trim();
+      if (!name) {
+        showStatus('Informe o nome do campeonato antes de salvar.', 'warn');
+        els.championshipName.focus();
+        return;
+      }
+
+      refreshStoredCategories();
+      const now = new Date().toISOString();
+      let record = championshipLibrary.championships.find(item => item.id === activeChampionshipId);
+      if (record) {
+        record.name = name;
+        record.athletes = cloneState(state.athletes);
+        record.categories = cloneState(state.categories);
+        record.updatedAt = now;
+      } else {
+        activeChampionshipId = createChampionshipId();
+        record = {
+          id: activeChampionshipId,
+          name,
+          athletes: cloneState(state.athletes),
+          categories: cloneState(state.categories),
+          createdAt: now,
+          updatedAt: now
+        };
+        championshipLibrary.championships.push(record);
+      }
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      persistChampionshipLibrary();
+      updateOpenChampionshipAvailability();
+      renderRecentChampionships();
+      markSaved();
+      showStatus('Campeonato salvo com sucesso.');
+    }
+
+    function createNewChampionshipWorkspace() {
+      activeChampionshipId = null;
+      state = { athletes: [], categories: [...defaultCategories] };
+      els.championshipName.value = 'Novo campeonato';
+      els.panelSearch.value = '';
+      els.athleteSearch.value = '';
+      els.categorySearch.value = '';
+      els.numero.value = '';
+      els.nome.value = '';
+      els.busca.value = '';
+      draftSelectedCategories = [];
+      editDraftSelectedCategories = [];
+      delete els.saveBtn.dataset.editing;
+      els.saveBtn.textContent = 'Cadastrar atleta';
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      persistChampionshipLibrary();
+      setActiveTab('registrationsTab');
+      renderAll();
+      markUnsaved();
+      els.championshipName.focus();
+      els.championshipName.select();
+      showStatus('Novo campeonato criado.');
+    }
+
+    function openSavedChampionship(id) {
+      const record = championshipLibrary.championships.find(item => item.id === id);
+      if (!record) {
+        showStatus('O campeonato selecionado não foi encontrado.', 'error');
+        return;
+      }
+
+      activeChampionshipId = record.id;
+      state = parseStoredState(JSON.stringify({ athletes: record.athletes, categories: record.categories })) || { athletes: [], categories: [] };
+      els.championshipName.value = record.name;
+      els.panelSearch.value = '';
+      els.athleteSearch.value = '';
+      els.categorySearch.value = '';
+      els.numero.value = '';
+      els.nome.value = '';
+      els.busca.value = '';
+      draftSelectedCategories = [];
+      editDraftSelectedCategories = [];
+      delete els.saveBtn.dataset.editing;
+      els.saveBtn.textContent = 'Cadastrar atleta';
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      persistChampionshipLibrary();
+      closeInterfaceModal(els.openChampionshipModal);
+      setActiveTab('registrationsTab');
+      renderAll();
+      isChampionshipDirty = false;
+      persistWorkspaceMeta();
+      els.saveIndicator.hidden = true;
+      showStatus(`Campeonato “${record.name}” aberto.`);
+    }
+
+    function requestDiscardConfirmation({ title, message, buttonLabel, action }) {
+      pendingConfirmedAction = action;
+      els.newChampionshipModalTitle.textContent = title;
+      els.newChampionshipModalMessage.textContent = message;
+      els.confirmNewChampionshipBtn.textContent = buttonLabel;
+      openInterfaceModal(els.newChampionshipModal, els.cancelNewChampionshipBtn);
+    }
+
+    function requestNewChampionship() {
+      closeMoreMenu();
+      requestDiscardConfirmation({
+        title: 'Criar novo campeonato?',
+        message: isChampionshipDirty
+          ? 'As alterações que ainda não foram salvas serão descartadas.'
+          : 'O campeonato atual será fechado e um novo espaço de trabalho será criado.',
+        buttonLabel: isChampionshipDirty ? 'Descartar e criar novo' : 'Criar novo campeonato',
+        action: createNewChampionshipWorkspace
+      });
+    }
+
+    function requestOpenChampionship(id) {
+      const action = () => openSavedChampionship(id);
+      if (!isChampionshipDirty) {
+        action();
+        return;
+      }
+      closeInterfaceModal(els.openChampionshipModal);
+      requestDiscardConfirmation({
+        title: 'Abrir outro campeonato?',
+        message: 'As alterações que ainda não foram salvas serão descartadas.',
+        buttonLabel: 'Descartar e abrir',
+        action
+      });
+    }
+
+    function openInterfaceModal(modal, focusTarget = null) {
+      closeMoreMenu();
+      modal.classList.add('show');
+      modal.setAttribute('aria-hidden', 'false');
+      hideRegistrationFab();
+      updateBodyScrollLock();
+      if (focusTarget) requestAnimationFrame(() => focusTarget.focus());
+    }
+
+    function closeInterfaceModal(modal) {
+      modal.classList.remove('show');
+      modal.setAttribute('aria-hidden', 'true');
+      showRegistrationFab();
+      updateBodyScrollLock();
+    }
+
+    function toggleExportSubmenu() {
+      const willOpen = els.exportSubmenu.hidden;
+      els.exportSubmenu.hidden = !willOpen;
+      els.exportMenuBtn.setAttribute('aria-expanded', String(willOpen));
+      if (willOpen) {
+        positionExportSubmenu();
+        els.exportPdfBtn.focus();
+      }
+    }
+
+    function setActiveTab(tabId, focusTab = false) {
+      els.tabButtons.forEach(button => {
+        const selected = button.dataset.tab === tabId;
+        button.setAttribute('aria-selected', String(selected));
+        button.tabIndex = selected ? 0 : -1;
+        if (selected && focusTab) button.focus();
+      });
+
+      els.tabPanels.forEach(panel => {
+        const selected = panel.id === tabId;
+        panel.classList.toggle('active', selected);
+        panel.hidden = !selected;
+      });
+    }
+
+    function getCategoryAthleteCount(categoryName) {
+      return state.athletes.filter(athlete =>
+        Array.isArray(athlete.categorias) && athlete.categorias.includes(categoryName)
+      ).length;
+    }
+
+    function openCategoryAthletesModal(categoryName) {
+      if (!getAvailableCategories().includes(categoryName)) return;
+      const athletes = state.athletes
+        .filter(athlete => Array.isArray(athlete.categorias) && athlete.categorias.includes(categoryName))
+        .sort((a, b) => {
+          const numberDifference = Number(a.numero) - Number(b.numero);
+          return Number.isFinite(numberDifference) && numberDifference !== 0
+            ? numberDifference
+            : a.nome.localeCompare(b.nome, 'pt-BR');
+        });
+
+      els.categoryAthletesModalTitle.textContent = categoryName;
+      els.categoryAthletesModalSubtitle.textContent = athletes.length
+        ? `${athletes.length} atleta${athletes.length === 1 ? '' : 's'} inscrito${athletes.length === 1 ? '' : 's'} nesta categoria.`
+        : 'Nenhum atleta inscrito nesta categoria.';
+      els.categoryAthletesBody.innerHTML = athletes.length
+        ? athletes.map(athlete => `
+            <tr>
+              <td><strong>${escapeHtml(athlete.numero)}</strong></td>
+              <td>${escapeHtml(athlete.nome)}</td>
+            </tr>
+          `).join('')
+        : '<tr><td colspan="2"><div class="empty">Esta categoria ainda não possui atletas inscritos.</div></td></tr>';
+
+      resetCategoryForm();
+      els.categoryAthletesModal.classList.add('show');
+      els.categoryAthletesModal.setAttribute('aria-hidden', 'false');
+      hideRegistrationFab();
+      updateBodyScrollLock();
+      requestAnimationFrame(() => els.closeCategoryAthletesBtn.focus());
+    }
+
+    function closeCategoryAthletesModal() {
+      els.categoryAthletesModal.classList.remove('show');
+      els.categoryAthletesModal.setAttribute('aria-hidden', 'true');
+      showRegistrationFab();
+      updateBodyScrollLock();
+    }
+
+    function renderCategoryManager() {
+      const categories = getAvailableCategories();
+      const search = els.categorySearch.value.trim();
+      const visibleCategories = search
+        ? categories.filter(category => matchesSmartSearch(
+            { numero: '', nome: '', categoria: category },
+            search
+          ))
+        : categories;
+
+      if (!categories.length) {
+        els.categoryManagerBody.innerHTML = '<tr><td colspan="4"><div class="empty">Nenhuma categoria cadastrada.</div></td></tr>';
+        return;
+      }
+
+      if (!visibleCategories.length) {
+        els.categoryManagerBody.innerHTML = `<tr><td colspan="4"><div class="empty">Nenhuma categoria encontrada para “${escapeHtml(search)}”.</div></td></tr>`;
+        return;
+      }
+
+      els.categoryManagerBody.innerHTML = visibleCategories.map(category => {
+        const athleteCount = getCategoryAthleteCount(category);
+        return `
+          <tr>
+            <td><button class="athlete-link" type="button" onclick="openCategoryAthletesModal('${escapeJs(category)}')">${escapeHtml(category)}</button></td>
+            <td><span class="category-kind">${isOverallCategory(category) ? 'Overall' : 'Competição'}</span></td>
+            <td>${athleteCount}</td>
+            <td class="actions-column">
+              <div class="table-actions">
+                <button class="secondary" type="button" onclick="beginCategoryEdit('${escapeJs(category)}')">Editar</button>
+                <button class="danger" type="button" onclick="openDeleteCategoryModal('${escapeJs(category)}')">Excluir</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function resetCategoryForm() {
+      editingCategoryName = null;
+      els.categoryNameInput.value = '';
+      els.saveCategoryBtn.textContent = 'Adicionar';
+      els.cancelCategoryEditBtn.hidden = true;
+      els.categoryManagerForm.hidden = true;
+      els.toggleCategoryFormBtn.setAttribute('aria-expanded', 'false');
+    }
+
+    function openCategoryForm() {
+      els.categoryManagerForm.hidden = false;
+      els.toggleCategoryFormBtn.setAttribute('aria-expanded', 'true');
+      requestAnimationFrame(() => els.categoryNameInput.focus());
+    }
+
+    function toggleCategoryForm() {
+      if (els.categoryManagerForm.hidden) {
+        resetCategoryForm();
+        openCategoryForm();
+      } else {
+        resetCategoryForm();
+      }
+    }
+
+    function beginCategoryEdit(categoryName) {
+      if (!getAvailableCategories().includes(categoryName)) return;
+      editingCategoryName = categoryName;
+      els.categoryNameInput.value = categoryName;
+      els.saveCategoryBtn.textContent = 'Salvar alteração';
+      els.cancelCategoryEditBtn.hidden = false;
+      openCategoryForm();
+      requestAnimationFrame(() => els.categoryNameInput.select());
+    }
+
+    function saveCategory() {
+      const nextName = normalizeCategoryName(els.categoryNameInput.value);
+      if (!nextName) {
+        showStatus('Informe o nome da categoria.', 'warn');
+        els.categoryNameInput.focus();
+        return;
+      }
+
+      const duplicate = getAvailableCategories().some(category =>
+        normalizeSearchText(category) === normalizeSearchText(nextName) && category !== editingCategoryName
+      );
+      if (duplicate) {
+        showStatus('Já existe uma categoria com esse nome.', 'warn');
+        return;
+      }
+
+      if (editingCategoryName) {
+        state.categories = state.categories.map(category => category === editingCategoryName ? nextName : category);
+        state.athletes = state.athletes.map(athlete => ({
+          ...athlete,
+          categorias: sortCategoriesByReference([...new Set(
+            athlete.categorias.map(category => category === editingCategoryName ? nextName : category)
+          )])
+        }));
+        showStatus('Categoria atualizada com sucesso.');
+      } else {
+        state.categories.push(nextName);
+        showStatus('Categoria adicionada com sucesso.');
+      }
+
+      state.categories = sortCategoriesByReference([...new Set(state.categories)]);
+      saveState();
+      resetCategoryForm();
+      renderAll();
+    }
+
+    function openDeleteCategoryModal(categoryName) {
+      if (!getAvailableCategories().includes(categoryName)) return;
+      pendingDeleteCategoryName = categoryName;
+      const athleteCount = getCategoryAthleteCount(categoryName);
+      const athleteMessage = athleteCount
+        ? ` Ela também será removida de ${athleteCount} atleta${athleteCount === 1 ? '' : 's'}.`
+        : '';
+      els.deleteCategoryMessage.textContent = `A categoria “${categoryName}” será excluída deste show.${athleteMessage}`;
+      resetCategoryForm();
+      els.deleteCategoryModal.classList.add('show');
+      els.deleteCategoryModal.setAttribute('aria-hidden', 'false');
+      hideRegistrationFab();
+      updateBodyScrollLock();
+      requestAnimationFrame(() => els.cancelDeleteCategoryBtn.focus());
+    }
+
+    function closeDeleteCategoryModal() {
+      els.deleteCategoryModal.classList.remove('show');
+      els.deleteCategoryModal.setAttribute('aria-hidden', 'true');
+      pendingDeleteCategoryName = null;
+      showRegistrationFab();
+      updateBodyScrollLock();
+    }
+
+    function confirmDeleteCategory() {
+      const categoryName = pendingDeleteCategoryName;
+      if (!categoryName) return;
+      state.categories = state.categories.filter(category => category !== categoryName);
+      state.athletes = state.athletes.map(athlete => ({
+        ...athlete,
+        categorias: athlete.categorias.filter(category => category !== categoryName)
+      }));
+      saveState();
+      resetCategoryForm();
+      closeDeleteCategoryModal();
+      renderAll();
+      showStatus('Categoria excluída.');
+    }
+
+    function showStatus(message, type = "ok") {
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      els.toastWrap.appendChild(toast);
+
+      requestAnimationFrame(() => toast.classList.add('show'));
+
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 220);
+      }, 2600);
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function escapeJs(value) {
+      return String(value).replaceAll('\\', '\\\\').replaceAll("'", "\\'");
+    }
+
+    function normalizeCategoryName(value) {
+      return String(value ?? '')
+        .replace(/^\s*\d+\s*[-.)–—:]\s*/, '')
+        .replace(/\s+/g, ' ' )
+        .trim();
+    }
+
+    function renderCheckboxList(container, filter = "", selectedCategories = []) {
+      const term = filter.trim().toLowerCase();
+      const selected = new Set(selectedCategories);
+      const availableCategories = getAvailableCategories().filter(cat => !isOverallCategory(cat));
+      const filtered = availableCategories.filter(cat => cat.toLowerCase().includes(term));
+
+      container.innerHTML = filtered.length
+        ? filtered.map(cat => `
+            <label class="check">
+              <input type="checkbox" value="${escapeHtml(cat)}" ${selected.has(cat) ? "checked" : ""} />
+              <span>${escapeHtml(cat)}</span>
+            </label>
+          `).join("")
+        : `<div class="empty">${availableCategories.length ? "Nenhuma categoria encontrada para essa busca." : "Nenhuma categoria carregada ainda. Importe uma planilha Excel para preencher a lista."}</div>`;
+    }
+
+    function renderCategoryCheckboxes(filter = "", selectedCategories = null) {
+      renderCheckboxList(els.categories, filter, selectedCategories ?? draftSelectedCategories);
+    }
+
+    function renderRegistrationSelectedPills(categories = null) {
+      renderSelectedPills(
+        els.registrationSelectedPills,
+        sortCategoriesByReference([...(categories ?? draftSelectedCategories)])
+      );
+    }
+
+    function syncDraftSelectedCategories() {
+      const visibleChecked = new Set(
+        [...els.categories.querySelectorAll('input[type="checkbox"]:checked')].map(input => input.value)
+      );
+      const visibleValues = new Set(
+        [...els.categories.querySelectorAll('input[type="checkbox"]')].map(input => input.value)
+      );
+
+      draftSelectedCategories = sortCategoriesByReference([
+        ...draftSelectedCategories.filter(cat => !visibleValues.has(cat)),
+        ...visibleChecked
+      ]);
+
+      renderRegistrationSelectedPills(draftSelectedCategories);
+      return [...draftSelectedCategories];
+    }
+
+    function renderEditCategoryCheckboxes(filter = "", selectedCategories = null) {
+      renderCheckboxList(els.editCategories, filter, selectedCategories ?? editDraftSelectedCategories);
+    }
+
+    function renderSelectedPills(container, categories = []) {
+      if (!container) return;
+      if (!categories.length) {
+        container.innerHTML = '<div class="pill-row-empty">Nenhuma categoria marcada.</div>';
+        return;
+      }
+
+      container.innerHTML = categories
+        .map(cat => `<span class="pill">${escapeHtml(cat)}</span>`)
+        .join('');
+    }
+
+    function renderEditSelectedPills(categories = null) {
+      renderSelectedPills(
+        els.editSelectedPills,
+        sortCategoriesByReference([...(categories ?? editDraftSelectedCategories)])
+      );
+    }
+
+    function syncEditDraftSelectedCategories() {
+      const visibleChecked = new Set(
+        [...els.editCategories.querySelectorAll('input[type="checkbox"]:checked')].map(input => input.value)
+      );
+      const visibleValues = new Set(
+        [...els.editCategories.querySelectorAll('input[type="checkbox"]')].map(input => input.value)
+      );
+
+      editDraftSelectedCategories = sortCategoriesByReference([
+        ...editDraftSelectedCategories.filter(cat => !visibleValues.has(cat)),
+        ...visibleChecked
+      ]);
+
+      renderEditSelectedPills(editDraftSelectedCategories);
+      return [...editDraftSelectedCategories];
+    }
+
+    function getSelectedCategories() {
+      return syncDraftSelectedCategories();
+    }
+
+    function getEditSelectedCategories() {
+      return syncEditDraftSelectedCategories();
+    }
+
+    function getHighestAthleteNumber() {
+      const numbers = state.athletes
+        .map(athlete => Number.parseInt(String(athlete.numero).trim(), 10))
+        .filter(number => Number.isFinite(number));
+
+      return numbers.length ? Math.max(...numbers) : 0;
+    }
+
+    function incrementAthleteNumber() {
+      const nextNumber = getHighestAthleteNumber() + 1;
+      els.numero.value = String(nextNumber);
+      els.numero.focus();
+      els.numero.select();
+      showStatus(`Número incrementado para ${nextNumber}.`);
+    }
+
+    function clearForm() {
+      els.numero.value = "";
+      els.nome.value = "";
+      els.busca.value = "";
+      draftSelectedCategories = [];
+
+      els.categories.querySelectorAll('input[type="checkbox"]').forEach(input => {
+        input.checked = false;
+      });
+
+      renderCategoryCheckboxes("", []);
+      renderRegistrationSelectedPills([]);
+      delete els.saveBtn.dataset.editing;
+      els.saveBtn.textContent = "Cadastrar atleta";
+      closeRegistrationModal();
+    }
+
+    function upsertAthlete() {
+      const numero = String(els.numero.value).trim();
+      const nome = els.nome.value.trim();
+      const selectedCategories = getSelectedCategories();
+      const editingNumber = els.saveBtn.dataset.editing || null;
+
+      if (!numero) {
+        showStatus('Informe o número do atleta.', 'warn');
+        els.numero.focus();
+        return;
+      }
+
+      if (!nome) {
+        showStatus('Informe o nome do atleta.', 'warn');
+        els.nome.focus();
+        return;
+      }
+
+      if (selectedCategories.length === 0) {
+        showStatus('Marque pelo menos uma categoria.', 'warn');
+        return;
+      }
+
+      const duplicate = state.athletes.find(a => a.numero === numero && a.numero !== editingNumber);
+      if (duplicate) {
+        showStatus(`Já existe um atleta com o número ${numero}.`, 'error');
+        return;
+      }
+
+      const athlete = {
+        numero,
+        nome,
+        categorias: sortCategoriesByReference([...selectedCategories])
+      };
+
+      const editIndex = state.athletes.findIndex(a => a.numero === editingNumber);
+      if (editIndex >= 0) {
+        state.athletes[editIndex] = athlete;
+        showStatus('Cadastro atualizado com sucesso.');
+      } else {
+        state.athletes.push(athlete);
+        showStatus('Atleta cadastrado com sucesso.');
+      }
+
+      state.athletes.sort((a, b) => Number(a.numero) - Number(b.numero));
+      saveState();
+      clearForm();
+      renderAll();
+    }
+
+    function openEditModal(numero) {
+      const athlete = state.athletes.find(a => a.numero === String(numero));
+      if (!athlete) return;
+
+      const editNameEl = document.getElementById('editModalName');
+      if (editNameEl) editNameEl.textContent = athlete.nome;
+
+      hideRegistrationFab();
+      editingAthleteNumber = athlete.numero;
+      els.editNumero.value = athlete.numero;
+      els.editNome.value = athlete.nome;
+      els.editBusca.value = '';
+      editDraftSelectedCategories = athlete.categorias.filter(cat => !isOverallCategory(cat));
+      renderEditCategoryCheckboxes('', editDraftSelectedCategories);
+      renderEditSelectedPills(editDraftSelectedCategories);
+
+      els.editModal.classList.add('show');
+      els.editModal.setAttribute('aria-hidden', 'false');
+      updateBodyScrollLock();
+      requestAnimationFrame(() => els.editNumero.focus());
+    }
+
+    function closeEditModal() {
+      els.editModal.classList.remove('show');
+      els.editModal.setAttribute('aria-hidden', 'true');
+      editingAthleteNumber = null;
+      els.editBusca.value = '';
+      editDraftSelectedCategories = [];
+      renderEditSelectedPills([]);
+      showRegistrationFab();
+      updateBodyScrollLock();
+    }
+
+    function saveEditAthlete() {
+      const numero = String(els.editNumero.value).trim();
+      const nome = els.editNome.value.trim();
+      const selectedCategories = getEditSelectedCategories();
+
+      if (!numero) {
+        showStatus('Informe o número do atleta.', 'warn');
+        els.editNumero.focus();
+        return;
+      }
+
+      if (!nome) {
+        showStatus('Informe o nome do atleta.', 'warn');
+        els.editNome.focus();
+        return;
+      }
+
+      if (selectedCategories.length === 0) {
+        showStatus('Marque pelo menos uma categoria.', 'warn');
+        return;
+      }
+
+      const duplicate = state.athletes.find(a => a.numero === numero && a.numero !== editingAthleteNumber);
+      if (duplicate) {
+        showStatus(`Já existe um atleta com o número ${numero}.`, 'error');
+        return;
+      }
+
+      const athlete = {
+        numero,
+        nome,
+        categorias: sortCategoriesByReference([...selectedCategories])
+      };
+
+      const editIndex = state.athletes.findIndex(a => a.numero === editingAthleteNumber);
+      if (editIndex < 0) return;
+
+      state.athletes[editIndex] = athlete;
+      state.athletes.sort((a, b) => Number(a.numero) - Number(b.numero));
+      saveState();
+      renderAll();
+      closeEditModal();
+      showStatus('Cadastro atualizado com sucesso.');
+    }
+
+    function editAthlete(numero) {
+      openEditModal(numero);
+    }
+
+    function removeAthlete(numero) {
+      const athlete = state.athletes.find(a => a.numero === String(numero));
+      if (!athlete) return;
+
+      pendingDeleteAthleteNumber = athlete.numero;
+      els.deleteAthleteMessage.textContent = `O atleta ${athlete.numero} — ${athlete.nome} será removido de todas as categorias deste campeonato.`;
+      openInterfaceModal(els.deleteAthleteModal, els.cancelDeleteAthleteBtn);
+    }
+
+    function closeDeleteAthleteModal() {
+      pendingDeleteAthleteNumber = null;
+      closeInterfaceModal(els.deleteAthleteModal);
+    }
+
+    function confirmDeleteAthlete() {
+      if (!pendingDeleteAthleteNumber) return;
+      state.athletes = state.athletes.filter(a => a.numero !== String(pendingDeleteAthleteNumber));
+      pendingDeleteAthleteNumber = null;
+      saveState();
+      closeInterfaceModal(els.deleteAthleteModal);
+      renderAll();
+      showStatus('Atleta removido.');
+    }
+
+    function hideRegistrationFab() {
+      els.openRegistrationBtn.classList.add('is-hidden');
+    }
+
+    function showRegistrationFab() {
+      if (
+        els.editModal.classList.contains('show') ||
+        els.deleteAthleteModal.classList.contains('show') ||
+        els.deleteCategoryModal.classList.contains('show') ||
+        els.categoryAthletesModal.classList.contains('show') ||
+        els.newChampionshipModal.classList.contains('show') ||
+        els.openChampionshipModal.classList.contains('show') ||
+        els.settingsModal.classList.contains('show') ||
+        els.aboutModal.classList.contains('show')
+      ) {
+        return;
+      }
+      els.openRegistrationBtn.classList.remove('is-hidden');
+    }
+
+    function updateBodyScrollLock() {
+      const hasOpenModal =
+        els.registrationModal.classList.contains('show') ||
+        els.editModal.classList.contains('show') ||
+        els.deleteAthleteModal.classList.contains('show') ||
+        els.deleteCategoryModal.classList.contains('show') ||
+        els.categoryAthletesModal.classList.contains('show') ||
+        els.newChampionshipModal.classList.contains('show') ||
+        els.openChampionshipModal.classList.contains('show') ||
+        els.settingsModal.classList.contains('show') ||
+        els.aboutModal.classList.contains('show');
+      document.body.style.overflow = hasOpenModal ? 'hidden' : '';
+    }
+
+    function openRegistrationModal() {
+      els.openRegistrationBtn.classList.add('is-open');
+      els.openRegistrationBtn.setAttribute('aria-label', 'Fechar cadastro');
+      els.openRegistrationBtn.setAttribute('data-tooltip', 'Fechar cadastro');
+      els.registrationModal.classList.add('show');
+      els.registrationModal.setAttribute('aria-hidden', 'false');
+      renderCategoryCheckboxes(els.busca.value, draftSelectedCategories);
+      updateBodyScrollLock();
+      requestAnimationFrame(() => {
+        if (els.numero.value) {
+          els.nome.focus();
+        } else {
+          els.numero.focus();
+        }
+      });
+    }
+
+    function closeRegistrationModal() {
+      els.openRegistrationBtn.classList.remove('is-open');
+      els.openRegistrationBtn.setAttribute('aria-label', 'Cadastrar atleta');
+      els.openRegistrationBtn.setAttribute('data-tooltip', 'Cadastrar atleta');
+      els.registrationModal.classList.remove('show');
+      els.registrationModal.setAttribute('aria-hidden', 'true');
+      updateBodyScrollLock();
+    }
+
+    function buildRegistrationRows() {
+      const rows = [];
+      for (const athlete of state.athletes) {
+        for (const categoria of athlete.categorias) {
+          if (isOverallCategory(categoria)) continue;
+          rows.push({
+            numero: athlete.numero,
+            nome: athlete.nome,
+            categoria
+          });
+        }
+      }
+      return rows.sort((a, b) => {
+        const catCompare = compareCategories(a.categoria, b.categoria);
+        if (catCompare !== 0) return catCompare;
+        return Number(a.numero) - Number(b.numero);
+      });
+    }
+
+    function normalizeSearchText(value) {
+      return String(value ?? '')
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function buildSearchTerms(value) {
+      const base = normalizeSearchText(value);
+      if (!base) return [];
+
+      const compact = base.replace(/\s+/g, '');
+      const terms = new Set([base, ...base.split(' ')]);
+
+      if (compact) {
+        terms.add(compact);
+        terms.add(compact.replace(/,/g, '.'));
+        terms.add(compact.replace(/\./g, ','));
+      }
+
+      return [...terms].filter(Boolean);
+    }
+
+    function matchesSmartSearch(row, rawQuery) {
+      const query = String(rawQuery ?? '').trim();
+      if (!query) return true;
+
+      const terms = buildSearchTerms(query);
+      if (!terms.length) return true;
+
+      const numero = normalizeSearchText(row.numero);
+      const nome = normalizeSearchText(row.nome);
+      const categoria = normalizeSearchText(row.categoria);
+      const numeroCompact = numero.replace(/\s+/g, '');
+      const nomeCompact = nome.replace(/\s+/g, '');
+      const categoriaCompact = categoria.replace(/\s+/g, '');
+
+      return terms.every(term => {
+        const normalizedTerm = normalizeSearchText(term);
+        const compactTerm = normalizedTerm.replace(/\s+/g, '');
+        return (
+          numero.includes(normalizedTerm) ||
+          nome.includes(normalizedTerm) ||
+          categoria.includes(normalizedTerm) ||
+          numeroCompact.includes(compactTerm) ||
+          nomeCompact.includes(compactTerm) ||
+          categoriaCompact.includes(compactTerm)
+        );
+      });
+    }
+
+
+    function isCategoryTitleCell(value) {
+      const text = String(value ?? '').trim();
+      return /^\d+\s*[-–—]\s*.+$/.test(text);
+    }
+
+    function cleanImportedCategoryName(value) {
+      return String(value ?? '')
+        .replace(/^\s*\d+\s*[-–—]\s*/, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function normalizeHeaderCell(value) {
+      return String(value ?? '')
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .toLowerCase()
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function cellHasUsefulValue(value) {
+      return String(value ?? '').trim() !== '';
+    }
+
+    function importAthletesFromExcelRows(rows) {
+      const maxCols = rows.reduce((max, row) => Math.max(max, row.length), 0);
+      const titleMatches = [];
+
+      for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
+        const row = rows[rowIndex] || [];
+        for (let colIndex = 0; colIndex < maxCols; colIndex += 1) {
+          const cell = row[colIndex];
+          if (isCategoryTitleCell(cell)) {
+            titleMatches.push({
+              rowIndex,
+              colIndex,
+              rawTitle: String(cell).trim(),
+              category: cleanImportedCategoryName(cell)
+            });
+          }
+        }
+      }
+
+      if (!titleMatches.length) {
+        throw new Error('Nenhum bloco de categoria foi encontrado na primeira aba.');
+      }
+
+      const athleteMap = new Map();
+      const athleteKeysByName = new Map();
+      const importedCategories = new Set();
+      let importedLines = 0;
+
+      function getOrCreateAthlete(insc, nome) {
+        const cleanNumber = String(insc ?? '').trim();
+        const cleanName = String(nome ?? '').trim();
+        const normalizedName = normalizeSearchText(cleanName);
+
+        let athleteKey = '';
+        if (cleanNumber && athleteMap.has(cleanNumber)) {
+          athleteKey = cleanNumber;
+        } else if (normalizedName && athleteKeysByName.has(normalizedName)) {
+          athleteKey = athleteKeysByName.get(normalizedName);
+        } else {
+          athleteKey = cleanNumber || normalizedName;
+        }
+
+        if (!athleteMap.has(athleteKey)) {
+          athleteMap.set(athleteKey, {
+            numero: cleanNumber,
+            nome: cleanName,
+            categorias: new Set()
+          });
+        }
+
+        const athlete = athleteMap.get(athleteKey);
+
+        if (!athlete.numero && cleanNumber) {
+          athlete.numero = cleanNumber;
+          if (athleteKey !== cleanNumber) {
+            athleteMap.delete(athleteKey);
+            athleteMap.set(cleanNumber, athlete);
+            athleteKey = cleanNumber;
+          }
+        }
+
+        if (cleanName && athlete.nome.length < cleanName.length) {
+          athlete.nome = cleanName;
+        }
+
+        if (normalizedName) {
+          athleteKeysByName.set(normalizedName, athleteKey);
+        }
+
+        return athlete;
+      }
+
+      titleMatches.forEach((match, blockIndex) => {
+        let headerRowIndex = -1;
+        let inscCol = -1;
+        let nomeCol = -1;
+
+        for (let probeRow = match.rowIndex + 1; probeRow <= Math.min(rows.length - 1, match.rowIndex + 8); probeRow += 1) {
+          const row = rows[probeRow] || [];
+          const candidates = [];
+
+          for (let probeCol = 0; probeCol < maxCols; probeCol += 1) {
+            const header = normalizeHeaderCell(row[probeCol]);
+            if (header === 'insc' || header === 'nº' || header === 'no' || header === 'numero') {
+              candidates.push({ type: 'insc', col: probeCol, distance: Math.abs(probeCol - match.colIndex) });
+            }
+            if (header === 'nome') {
+              candidates.push({ type: 'nome', col: probeCol, distance: Math.abs(probeCol - match.colIndex) });
+            }
+          }
+
+          const inscCandidates = candidates.filter(item => item.type === 'insc').sort((a, b) => a.distance - b.distance);
+          const nomeCandidates = candidates.filter(item => item.type === 'nome').sort((a, b) => a.distance - b.distance);
+
+          if (inscCandidates.length && nomeCandidates.length) {
+            inscCol = inscCandidates[0].col;
+            nomeCol = nomeCandidates[0].col;
+            headerRowIndex = probeRow;
+            break;
+          }
+        }
+
+        if (headerRowIndex < 0 || inscCol < 0 || nomeCol < 0) {
+          return;
+        }
+
+        importedCategories.add(match.category);
+
+        const nextTitleSameZone = titleMatches
+          .slice(blockIndex + 1)
+          .find(other => Math.abs(other.colIndex - match.colIndex) <= 6 && other.rowIndex > match.rowIndex);
+        const hardStopRow = nextTitleSameZone ? nextTitleSameZone.rowIndex : rows.length;
+
+        let blankStreak = 0;
+        for (let rowIndex = headerRowIndex + 1; rowIndex < hardStopRow; rowIndex += 1) {
+          const row = rows[rowIndex] || [];
+
+          const localWindow = row.slice(Math.max(0, Math.min(match.colIndex, inscCol, nomeCol) - 1), Math.min(maxCols, Math.max(match.colIndex, inscCol, nomeCol) + 8));
+          if (localWindow.some(isCategoryTitleCell)) {
+            break;
+          }
+
+          const inscRaw = row[inscCol];
+          const nomeRaw = row[nomeCol];
+          const insc = String(inscRaw ?? '').trim();
+          const nome = String(nomeRaw ?? '').trim();
+
+          if (!cellHasUsefulValue(insc) && !cellHasUsefulValue(nome)) {
+            blankStreak += 1;
+            if (blankStreak >= 4) {
+              break;
+            }
+            continue;
+          }
+          blankStreak = 0;
+
+          if (normalizeHeaderCell(insc) === 'insc' || normalizeHeaderCell(nome) === 'nome') {
+            continue;
+          }
+
+          if (!nome) {
+            continue;
+          }
+
+          const athlete = getOrCreateAthlete(insc, nome);
+          athlete.categorias.add(match.category);
+          importedLines += 1;
+        }
+      });
+
+      const importedAthletes = [...athleteMap.values()]
+        .map(athlete => ({
+          numero: String(athlete.numero ?? '').trim(),
+          nome: String(athlete.nome ?? '').trim(),
+          categorias: sortCategoriesByReference([...athlete.categorias])
+        }))
+        .filter(athlete => athlete.nome && athlete.categorias.length > 0)
+        .sort((a, b) => {
+          const aNum = Number.parseInt(String(a.numero).replace(/\D+/g, ''), 10);
+          const bNum = Number.parseInt(String(b.numero).replace(/\D+/g, ''), 10);
+          const aHasNum = Number.isFinite(aNum);
+          const bHasNum = Number.isFinite(bNum);
+          if (aHasNum && bHasNum && aNum !== bNum) return aNum - bNum;
+          if (aHasNum && !bHasNum) return -1;
+          if (!aHasNum && bHasNum) return 1;
+          return a.nome.localeCompare(b.nome, 'pt-BR');
+        });
+
+      if (!importedAthletes.length) {
+        throw new Error('Nenhum atleta válido foi encontrado no arquivo Excel.');
+      }
+
+      state.categories = sortCategoriesByReference([...importedCategories]);
+      state.athletes = importedAthletes;
+      saveState();
+      renderAll();
+
+      return {
+        athletes: importedAthletes.length,
+        registrations: importedLines,
+        categories: new Set(importedAthletes.flatMap(athlete => athlete.categorias)).size
+      };
+    }
+
+    async function importExcelFile(file) {
+      if (!file) return;
+
+      if (typeof XLSX === 'undefined') {
+        throw new Error('A biblioteca de leitura de Excel não foi carregada.');
+      }
+
+      const buffer = await file.arrayBuffer();
+      const workbook = XLSX.read(buffer, { type: 'array' });
+      const firstSheetName = workbook.SheetNames?.[0];
+      if (!firstSheetName) {
+        throw new Error('O arquivo Excel não possui abas válidas.');
+      }
+
+      const worksheet = workbook.Sheets[firstSheetName];
+      const rows = XLSX.utils.sheet_to_json(worksheet, {
+        header: 1,
+        raw: false,
+        defval: ''
+      });
+
+      return importAthletesFromExcelRows(rows);
+    }
+
+
+    function sanitizeExcelFileName(value) {
+      const clean = String(value ?? '')
+        .replace(/[\/:*?"<>|]+/g, '-')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .replace(/[. ]+$/g, '');
+      return clean || 'sumula-legends';
+    }
+
+    function buildExcelExportRows() {
+      const exportCategories = sortCategoriesByReference(
+        state.categories.filter(category => !isOverallCategory(category))
+      );
+      const rows = [];
+      let registrationCount = 0;
+
+      exportCategories.forEach((category, categoryIndex) => {
+        const athletes = state.athletes
+          .filter(athlete => athlete.categorias.includes(category))
+          .slice()
+          .sort((a, b) => {
+            const aNum = Number.parseInt(String(a.numero).replace(/\D+/g, ''), 10);
+            const bNum = Number.parseInt(String(b.numero).replace(/\D+/g, ''), 10);
+            const aHasNum = Number.isFinite(aNum);
+            const bHasNum = Number.isFinite(bNum);
+            if (aHasNum && bHasNum && aNum !== bNum) return aNum - bNum;
+            if (aHasNum && !bHasNum) return -1;
+            if (!aHasNum && bHasNum) return 1;
+            return String(a.nome).localeCompare(String(b.nome), 'pt-BR');
+          });
+
+        rows.push([`${categoryIndex + 1} - ${category}`]);
+        rows.push(['INSC', 'NOME']);
+
+        athletes.forEach(athlete => {
+          rows.push([String(athlete.numero ?? '').trim(), String(athlete.nome ?? '').trim()]);
+          registrationCount += 1;
+        });
+
+        // Quatro linhas vazias delimitam o bloco e são reconhecidas pelo importador.
+        rows.push([], [], [], []);
+      });
+
+      return { rows, categories: exportCategories.length, registrations: registrationCount };
+    }
+
+    function exportChampionshipToExcel() {
+      if (typeof XLSX === 'undefined') {
+        throw new Error('A biblioteca de geração de Excel não foi carregada.');
+      }
+
+      const summary = buildExcelExportRows();
+      if (!summary.categories) {
+        throw new Error('Não há categorias de competição para exportar.');
+      }
+
+      const worksheet = XLSX.utils.aoa_to_sheet(summary.rows);
+      worksheet['!cols'] = [
+        { wch: 14 },
+        { wch: 42 }
+      ];
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Inscrições');
+
+      const championshipName = els.championshipName.value.trim() || 'Súmula Legends';
+      workbook.Props = {
+        Title: championshipName,
+        Subject: 'Inscrições por categoria',
+        Author: 'LT ARTS',
+        Company: 'Súmula Legends',
+        Comments: 'Arquivo exportado pela Súmula Legends v0.4.1'
+      };
+
+      const filename = `${sanitizeExcelFileName(championshipName)}.xlsx`;
+      XLSX.writeFile(workbook, filename, { compression: true });
+      return summary;
+    }
+
+    function renderAthletesTable() {
+      if (state.athletes.length === 0) {
+        els.athletesBody.innerHTML = `
+          <tr>
+            <td colspan="4">
+              <div class="empty">Nenhum atleta cadastrado ainda. Bora popular isso aí e fazer a súmula ganhar vida.</div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      const search = els.athleteSearch.value.trim();
+      const visibleAthletes = search
+        ? state.athletes.filter(athlete => matchesSmartSearch({
+            numero: athlete.numero,
+            nome: athlete.nome,
+            categoria: athlete.categorias.join(' ')
+          }, search))
+        : state.athletes;
+
+      if (!visibleAthletes.length) {
+        els.athletesBody.innerHTML = `<tr><td colspan="4"><div class="empty">Nenhum atleta encontrado para “${escapeHtml(search)}”.</div></td></tr>`;
+        return;
+      }
+
+      els.athletesBody.innerHTML = visibleAthletes.map(athlete => `
+        <tr>
+          <td><strong>${escapeHtml(athlete.numero)}</strong></td>
+          <td>${escapeHtml(athlete.nome)}</td>
+          <td>${athlete.categorias.filter(cat => !isOverallCategory(cat)).map(cat => `<button class="pill category-pill" type="button" onclick="openCategoryAthletesModal('${escapeJs(cat)}')">${escapeHtml(cat)}</button>`).join('')}</td>
+          <td class="actions-column">
+            <div class="table-actions">
+              <button class="secondary" onclick="editAthlete('${escapeJs(athlete.numero)}')">Editar</button>
+              <button class="danger" onclick="removeAthlete('${escapeJs(athlete.numero)}')">Excluir</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+
+    const PDF_MIN_ROWS_PER_CATEGORY = 4;
+
+    function getCategoryPrintRowCount(itemsLength) {
+      return Math.max(PDF_MIN_ROWS_PER_CATEGORY, itemsLength + 1);
+    }
+
+    function buildCategoryRows(items) {
+      const totalRows = getCategoryPrintRowCount(items.length);
+
+      const filledRows = items.map((item, index) => `
+        <tr class="row-editable" onclick="editAthlete('${escapeJs(item.numero)}')" title="Clique para editar este atleta">
+          <td>${index + 1}</td>
+          <td><strong>${escapeHtml(item.numero)}</strong></td>
+          <td>
+            <button
+              class="athlete-link"
+              type="button"
+              onclick="event.stopPropagation(); editAthlete('${escapeJs(item.numero)}')"
+              aria-label="Editar atleta ${escapeHtml(item.nome)}"
+            >${escapeHtml(item.nome)}</button>
+          </td>
+          <td class="col-nota"></td>
+        </tr>
+      `);
+
+      const blankRows = Array.from(
+        { length: Math.max(0, totalRows - items.length) },
+        (_, offset) => `
+          <tr class="filler-row">
+            <td>${items.length + offset + 1}</td>
+            <td></td>
+            <td></td>
+            <td class="col-nota"></td>
+          </tr>
+        `
+      );
+
+      return [...filledRows, ...blankRows].join('');
+    }
+
+    function renderCategoryLists() {
+      const rows = buildRegistrationRows();
+      const allCategories = getAvailableCategories();
+      const categories = allCategories.filter(cat => !isOverallCategory(cat));
+      const overallCategories = allCategories.filter(isOverallCategory);
+      const groups = Object.fromEntries(categories.map(cat => [cat, []]));
+      const rawSearch = els.panelSearch?.value || '';
+      const search = rawSearch.trim();
+
+      rows.forEach(row => {
+        if (!groups[row.categoria]) groups[row.categoria] = [];
+        groups[row.categoria].push(row);
+      });
+
+      els.overallPrintLists.innerHTML = overallCategories.map(cat => `
+        <section class="card category-block">
+          <h3>${escapeHtml(cat)}</h3>
+          <div class="table-wrap">
+            <table class="mini-table">
+              <thead>
+                <tr>
+                  <th>Nr</th>
+                  <th>Insc</th>
+                  <th>Nome</th>
+                  <th class="col-nota">Nota</th>
+                </tr>
+              </thead>
+              <tbody>${buildCategoryRows([])}</tbody>
+            </table>
+          </div>
+        </section>
+      `).join('');
+
+      const visibleCategories = categories.filter(cat => {
+        const items = groups[cat] || [];
+        if (!search) return true;
+        const categoryMatches = matchesSmartSearch(
+          { numero: '', nome: '', categoria: cat },
+          search
+        );
+        return categoryMatches || items.some(item => matchesSmartSearch(item, search));
+      });
+
+      if (!categories.length) {
+        els.categoryLists.innerHTML = `<div class="empty">Nenhuma categoria carregada ainda. Importe uma planilha Excel para popular o sistema.</div>`;
+        return;
+      }
+
+      if (!visibleCategories.length) {
+        const searchLabel = escapeHtml(search);
+        els.categoryLists.innerHTML = `<div class="empty">Nenhum resultado encontrado para “${searchLabel}”.</div>`;
+        return;
+      }
+
+      els.categoryLists.innerHTML = visibleCategories.map(cat => {
+        const items = (groups[cat] || []).filter(item => matchesSmartSearch(item, search));
+        return `
+          <section class="card category-block">
+            <h3>${escapeHtml(cat)}</h3>
+            <div class="table-wrap">
+              <table class="mini-table">
+                <thead>
+                  <tr>
+                    <th>Nr</th>
+                    <th>Insc</th>
+                    <th>Nome</th>
+                    <th class="col-nota">Nota</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${buildCategoryRows(items)}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        `;
+      }).join('');
+    }
+
+    function renderAll() {
+      renderCategoryCheckboxes(els.busca.value, draftSelectedCategories);
+      renderRegistrationSelectedPills(draftSelectedCategories);
+      renderAthletesTable();
+      renderCategoryLists();
+      renderCategoryManager();
+    }
+
+
+
+
+    els.menuImportExcelBtn.addEventListener('click', () => {
+      closeMoreMenu();
+      els.excelInput.click();
+    });
+    els.excelInput.addEventListener('change', async (event) => {
+      const [file] = event.target.files || [];
+      if (!file) return;
+
+      try {
+        const summary = await importExcelFile(file);
+        activeChampionshipId = null;
+        championshipLibrary.activeId = null;
+        els.championshipName.value = file.name.replace(/\.[^.]+$/, '') || 'Campeonato importado';
+        persistChampionshipLibrary();
+        markUnsaved();
+        showStatus(`Excel importado: ${summary.athletes} atletas consolidados em ${summary.categories} categorias.`);
+      } catch (error) {
+        console.error(error);
+        showStatus(error?.message || 'Não foi possível importar o Excel.', 'error');
+      } finally {
+        event.target.value = '';
+      }
+    });
+
+    els.openRegistrationBtn.addEventListener('click', () => {
+      if (els.registrationModal.classList.contains('show')) {
+        closeRegistrationModal();
+        return;
+      }
+      openRegistrationModal();
+    });
+    els.saveBtn.addEventListener('click', upsertAthlete);
+    els.incrementBtn.addEventListener('click', incrementAthleteNumber);
+    els.printBtn.addEventListener('click', () => window.print());
+    els.moreMenuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleMoreMenu();
+    });
+    els.newChampionshipBtn.addEventListener('click', requestNewChampionship);
+    els.openChampionshipBtn.addEventListener('click', () => {
+      closeMoreMenu();
+      renderRecentChampionships();
+      openInterfaceModal(els.openChampionshipModal, els.closeOpenChampionshipBtn);
+    });
+    els.saveChampionshipBtn.addEventListener('click', saveCurrentChampionship);
+    els.exportMenuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleExportSubmenu();
+    });
+    els.exportPdfBtn.addEventListener('click', () => {
+      closeMoreMenu();
+      window.print();
+    });
+    els.exportExcelBtn.addEventListener('click', () => {
+      closeMoreMenu();
+      try {
+        const summary = exportChampionshipToExcel();
+        showStatus(`Excel exportado: ${summary.registrations} inscrições distribuídas em ${summary.categories} categorias.`);
+      } catch (error) {
+        console.error(error);
+        showStatus(error?.message || 'Não foi possível exportar o Excel.', 'error');
+      }
+    });
+    els.openSettingsBtn.addEventListener('click', () => openInterfaceModal(els.settingsModal, els.closeSettingsBtn));
+    els.openAboutBtn.addEventListener('click', () => openInterfaceModal(els.aboutModal, els.closeAboutBtn));
+    els.themeSettingInputs.forEach(input => {
+      input.addEventListener('change', () => applyThemeSetting(input.value));
+    });
+    els.championshipName.addEventListener('input', markUnsaved);
+    els.closeNewChampionshipBtn.addEventListener('click', () => closeInterfaceModal(els.newChampionshipModal));
+    els.cancelNewChampionshipBtn.addEventListener('click', () => {
+      pendingConfirmedAction = null;
+      closeInterfaceModal(els.newChampionshipModal);
+    });
+    els.confirmNewChampionshipBtn.addEventListener('click', () => {
+      const action = pendingConfirmedAction;
+      pendingConfirmedAction = null;
+      closeInterfaceModal(els.newChampionshipModal);
+      if (action) action();
+    });
+    els.closeOpenChampionshipBtn.addEventListener('click', () => closeInterfaceModal(els.openChampionshipModal));
+    els.closeSettingsBtn.addEventListener('click', () => closeInterfaceModal(els.settingsModal));
+    els.closeAboutBtn.addEventListener('click', () => closeInterfaceModal(els.aboutModal));
+    document.addEventListener('click', (e) => {
+      if (!els.moreMenu.hidden && !els.moreMenu.contains(e.target)) closeMoreMenu();
+    });
+    window.addEventListener('resize', () => {
+      if (!els.moreMenu.hidden) positionMoreMenu();
+    });
+    window.addEventListener('scroll', () => {
+      if (!els.moreMenu.hidden) positionMoreMenu();
+    }, true);
+    els.closeEditBtn.addEventListener('click', closeEditModal);
+    els.cancelEditBtn.addEventListener('click', closeEditModal);
+    els.saveEditBtn.addEventListener('click', saveEditAthlete);
+    els.tabButtons.forEach((button, index) => {
+      button.addEventListener('click', () => setActiveTab(button.dataset.tab));
+      button.addEventListener('keydown', (e) => {
+        if (!['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+        e.preventDefault();
+        const direction = e.key === 'ArrowRight' ? 1 : -1;
+        const nextIndex = (index + direction + els.tabButtons.length) % els.tabButtons.length;
+        setActiveTab(els.tabButtons[nextIndex].dataset.tab, true);
+      });
+    });
+    els.saveCategoryBtn.addEventListener('click', saveCategory);
+    els.cancelCategoryEditBtn.addEventListener('click', resetCategoryForm);
+    els.toggleCategoryFormBtn.addEventListener('click', toggleCategoryForm);
+    els.categoryNameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') saveCategory();
+    });
+    els.closeDeleteCategoryBtn.addEventListener('click', closeDeleteCategoryModal);
+    els.cancelDeleteCategoryBtn.addEventListener('click', closeDeleteCategoryModal);
+    els.confirmDeleteCategoryBtn.addEventListener('click', confirmDeleteCategory);
+    els.closeDeleteAthleteBtn.addEventListener('click', closeDeleteAthleteModal);
+    els.cancelDeleteAthleteBtn.addEventListener('click', closeDeleteAthleteModal);
+    els.confirmDeleteAthleteBtn.addEventListener('click', confirmDeleteAthlete);
+    els.closeCategoryAthletesBtn.addEventListener('click', closeCategoryAthletesModal);
+    els.registrationModal.addEventListener('click', (e) => {
+      if (e.target.dataset.closeRegistrationModal === 'true') {
+        closeRegistrationModal();
+      }
+    });
+    els.deleteCategoryModal.addEventListener('click', (e) => {
+      if (e.target.dataset.closeDeleteCategoryModal === 'true') {
+        closeDeleteCategoryModal();
+      }
+    });
+    els.deleteAthleteModal.addEventListener('click', (e) => {
+      if (e.target.dataset.closeDeleteAthleteModal === 'true') {
+        closeDeleteAthleteModal();
+      }
+    });
+    els.categoryAthletesModal.addEventListener('click', (e) => {
+      if (e.target.dataset.closeCategoryAthletesModal === 'true') {
+        closeCategoryAthletesModal();
+      }
+    });
+    els.newChampionshipModal.addEventListener('click', (e) => {
+      if (e.target.dataset.closeNewChampionshipModal === 'true') closeInterfaceModal(els.newChampionshipModal);
+    });
+    els.openChampionshipModal.addEventListener('click', (e) => {
+      if (e.target.dataset.closeOpenChampionshipModal === 'true') closeInterfaceModal(els.openChampionshipModal);
+    });
+    els.settingsModal.addEventListener('click', (e) => {
+      if (e.target.dataset.closeSettingsModal === 'true') closeInterfaceModal(els.settingsModal);
+    });
+    els.aboutModal.addEventListener('click', (e) => {
+      if (e.target.dataset.closeAboutModal === 'true') closeInterfaceModal(els.aboutModal);
+    });
+    els.editModal.addEventListener('click', (e) => {
+      if (e.target.dataset.closeEditModal === 'true') {
+        closeEditModal();
+      }
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !els.moreMenu.hidden) {
+        closeMoreMenu();
+        els.moreMenuBtn.focus();
+        return;
+      }
+      if (e.key === 'Escape' && !els.categoryManagerForm.hidden) {
+        resetCategoryForm();
+        els.toggleCategoryFormBtn.focus();
+        return;
+      }
+      if (e.key === 'Escape' && els.editModal.classList.contains('show')) {
+        closeEditModal();
+        return;
+      }
+      if (e.key === 'Escape' && els.deleteAthleteModal.classList.contains('show')) {
+        closeDeleteAthleteModal();
+        return;
+      }
+      if (e.key === 'Escape' && els.deleteCategoryModal.classList.contains('show')) {
+        closeDeleteCategoryModal();
+        return;
+      }
+      if (e.key === 'Escape' && els.categoryAthletesModal.classList.contains('show')) {
+        closeCategoryAthletesModal();
+        return;
+      }
+      if (e.key === 'Escape' && els.newChampionshipModal.classList.contains('show')) {
+        closeInterfaceModal(els.newChampionshipModal);
+        return;
+      }
+      if (e.key === 'Escape' && els.openChampionshipModal.classList.contains('show')) {
+        closeInterfaceModal(els.openChampionshipModal);
+        return;
+      }
+      if (e.key === 'Escape' && els.settingsModal.classList.contains('show')) {
+        closeInterfaceModal(els.settingsModal);
+        return;
+      }
+      if (e.key === 'Escape' && els.aboutModal.classList.contains('show')) {
+        closeInterfaceModal(els.aboutModal);
+        return;
+      }
+      if (e.key === 'Escape' && els.registrationModal.classList.contains('show')) {
+        closeRegistrationModal();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        saveCurrentChampionship();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        requestNewChampionship();
+      }
+    });
+    els.busca.addEventListener('input', (e) => {
+      syncDraftSelectedCategories();
+      renderCategoryCheckboxes(e.target.value, draftSelectedCategories);
+    });
+
+    els.categories.addEventListener('change', (e) => {
+      if (e.target.matches('input[type="checkbox"]')) {
+        syncDraftSelectedCategories();
+      }
+    });
+    els.editBusca.addEventListener('input', (e) => {
+      syncEditDraftSelectedCategories();
+      renderEditCategoryCheckboxes(e.target.value, editDraftSelectedCategories);
+    });
+    els.editCategories.addEventListener('change', (e) => {
+      if (e.target.matches('input[type="checkbox"]')) {
+        syncEditDraftSelectedCategories();
+      }
+    });
+    els.panelSearch.addEventListener('input', () => {
+      renderCategoryLists();
+    });
+    els.athleteSearch.addEventListener('input', renderAthletesTable);
+    els.categorySearch.addEventListener('input', renderCategoryManager);
+
+    window.editAthlete = editAthlete;
+    window.removeAthlete = removeAthlete;
+    window.beginCategoryEdit = beginCategoryEdit;
+    window.openDeleteCategoryModal = openDeleteCategoryModal;
+    window.openCategoryAthletesModal = openCategoryAthletesModal;
+    window.requestOpenChampionship = requestOpenChampionship;
+    updateOpenChampionshipAvailability();
+    renderRecentChampionships();
+    showCurrentDirtyState();
+    persistWorkspaceMeta();
+    renderAll();
+
+    if ('serviceWorker' in navigator && window.isSecureContext) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js').catch(error => {
+          console.warn('Não foi possível ativar o funcionamento offline.', error);
+        });
+      });
+    }
+  </script>
+</body>
+</html>

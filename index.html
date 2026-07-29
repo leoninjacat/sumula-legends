@@ -695,8 +695,7 @@
     }
 
     .toast {
-      min-width: min(92vw, 320px);
-      max-width: min(92vw, 420px);
+      width: min(92vw, 320px);
       padding: 12px 16px;
       border-radius: 999px;
       color: #fff;
@@ -707,6 +706,9 @@
       transition: opacity 0.22s ease, transform 0.22s ease;
       backdrop-filter: blur(8px);
       text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .toast.show {
@@ -1763,7 +1765,7 @@
 
   <div id="editModal" class="modal" aria-hidden="true">
     <div class="modal-backdrop" data-close-edit-modal="true"></div>
-    <div class="modal-dialog modal-sm card" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
+    <div class="modal-dialog modal-sm modal-centered card" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
       <div class="modal-header">
         <div>
           <h2 id="editModalTitle" style="margin:0;">Editar atleta: <span id="editModalName"></span></h2>
@@ -2660,6 +2662,7 @@
       const toast = document.createElement('div');
       toast.className = `toast ${type}`;
       toast.textContent = message;
+      toast.title = message;
       els.toastWrap.appendChild(toast);
 
       requestAnimationFrame(() => toast.classList.add('show'));
@@ -2853,10 +2856,10 @@
       const editIndex = state.athletes.findIndex(a => a.numero === editingNumber);
       if (editIndex >= 0) {
         state.athletes[editIndex] = athlete;
-        showStatus('Cadastro atualizado com sucesso.');
+        showStatus(`Atleta salvo: ${numero} — ${nome}`);
       } else {
         state.athletes.push(athlete);
-        showStatus('Atleta cadastrado com sucesso.');
+        showStatus(`Atleta salvo: ${numero} — ${nome}`);
       }
 
       state.athletes.sort((a, b) => Number(a.numero) - Number(b.numero));
@@ -2940,7 +2943,7 @@
       saveState();
       renderAll();
       closeEditModal();
-      showStatus('Cadastro atualizado com sucesso.');
+      showStatus(`Atleta salvo: ${numero} — ${nome}`);
     }
 
     function editAthlete(numero) {

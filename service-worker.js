@@ -1,8 +1,9 @@
-const CACHE_NAME = 'sumula-legends-v0.4.1-export-submenu-r5';
+const CACHE_NAME = 'sumula-legends-v0.4.1-side-menu-r9';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.webmanifest',
+  './assets/components/legends-side-menu.js',
   './assets/img/logo.png',
   './assets/img/logo_dark.png',
   './assets/icons/Logo_Original.png',

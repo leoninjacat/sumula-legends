@@ -12,6 +12,7 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png" />
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
+  <script src="assets/components/legends-side-menu.js"></script>
   <title>Súmula Legends v0.4.1</title>
   <style>
     :root {
@@ -1571,26 +1572,7 @@
   <div class="document-credit">Súmula Legends v0.4.1 • Desenvolvido por LT ARTS</div>
   <div class="wrap">
     <div class="hero card">
-      <div class="more-menu-wrap">
-        <button id="moreMenuBtn" class="main-menu-button" type="button" aria-label="Menu principal" aria-haspopup="menu" aria-expanded="false">
-          <span></span><span></span><span></span>
-        </button>
-        <div id="moreMenu" class="more-menu main-menu" role="menu" hidden>
-          <button id="newChampionshipBtn" class="menu-item" type="button" role="menuitem"><span>Novo campeonato</span><span class="menu-shortcut">Ctrl+N</span></button>
-          <button id="openChampionshipBtn" class="menu-item" type="button" role="menuitem" disabled><span>Abrir campeonato</span></button>
-          <button id="saveChampionshipBtn" class="menu-item" type="button" role="menuitem"><span>Salvar campeonato</span><span class="menu-shortcut">Ctrl+S</span></button>
-          <div class="menu-divider"></div>
-          <button id="menuImportExcelBtn" class="menu-item" type="button" role="menuitem"><span>Importar Excel</span></button>
-          <button id="exportMenuBtn" class="menu-item" type="button" role="menuitem" aria-haspopup="menu" aria-expanded="false" aria-controls="exportSubmenu"><span>Exportar</span><span aria-hidden="true">›</span></button>
-          <div id="exportSubmenu" class="export-submenu" role="menu" hidden>
-            <button id="exportPdfBtn" class="menu-item" type="button" role="menuitem">Exportar súmula em PDF</button>
-            <button id="exportExcelBtn" class="menu-item" type="button" role="menuitem">Exportar para Excel</button>
-          </div>
-          <div class="menu-divider"></div>
-          <button id="openSettingsBtn" class="menu-item" type="button" role="menuitem">Configurações</button>
-          <button id="openAboutBtn" class="menu-item" type="button" role="menuitem">Sobre</button>
-        </div>
-      </div>
+      <legends-side-menu id="appSideMenu" logo="assets/img/logo.png" logo-alt="Logo Legends"></legends-side-menu>
 
       <div class="brand-slot" aria-label="Logo da federação">
         <img id="brandLogo" src="assets/img/logo.png" alt="Logo Legends" />
@@ -1958,6 +1940,7 @@
       incrementBtn: document.getElementById("incrementBtn"),
       excelInput: document.getElementById("excelInput"),
       printBtn: document.getElementById("printBtn"),
+      sideMenu: document.getElementById("appSideMenu"),
       moreMenuBtn: document.getElementById("moreMenuBtn"),
       moreMenu: document.getElementById("moreMenu"),
       championshipName: document.getElementById("championshipName"),
@@ -2063,48 +2046,25 @@
       const logoSrc = dark ? 'assets/img/logo_dark.png' : 'assets/img/logo.png';
       els.brandLogo.src = logoSrc;
       els.aboutLogo.src = logoSrc;
+      els.sideMenu.setLogo(logoSrc);
       els.themeSettingInputs.forEach(input => { input.checked = input.value === themeSetting; });
     }
 
     function positionMoreMenu() {
-      const buttonRect = els.moreMenuBtn.getBoundingClientRect();
-      const menuWidth = els.moreMenu.offsetWidth;
-      const left = Math.max(12, Math.min(window.innerWidth - menuWidth - 12, buttonRect.left));
-      els.moreMenu.style.left = `${left}px`;
-      els.moreMenu.style.top = `${buttonRect.bottom + 8}px`;
-      if (!els.exportSubmenu.hidden) positionExportSubmenu();
+      return;
     }
 
     function positionExportSubmenu() {
-      const buttonRect = els.exportMenuBtn.getBoundingClientRect();
-      const submenuWidth = els.exportSubmenu.offsetWidth;
-      const submenuHeight = els.exportSubmenu.offsetHeight;
-      const gap = 6;
-      const edge = 8;
-      const opensRight = buttonRect.right + gap + submenuWidth <= window.innerWidth - edge;
-      const left = opensRight
-        ? buttonRect.right + gap
-        : Math.max(edge, buttonRect.left - submenuWidth - gap);
-      const top = Math.max(edge, Math.min(buttonRect.top, window.innerHeight - submenuHeight - edge));
-      els.exportSubmenu.style.left = `${left}px`;
-      els.exportSubmenu.style.top = `${top}px`;
+      return;
     }
 
     function closeMoreMenu() {
-      els.moreMenu.hidden = true;
-      els.moreMenuBtn.setAttribute('aria-expanded', 'false');
-      els.exportSubmenu.hidden = true;
-      els.exportMenuBtn.setAttribute('aria-expanded', 'false');
+      els.sideMenu.closeMenu();
     }
 
     function toggleMoreMenu() {
-      const willOpen = els.moreMenu.hidden;
-      els.moreMenu.hidden = !willOpen;
-      els.moreMenuBtn.setAttribute('aria-expanded', String(willOpen));
-      if (willOpen) {
-        positionMoreMenu();
-        els.newChampionshipBtn.focus();
-      }
+      els.sideMenu.toggleMenu();
+      if (els.sideMenu.isOpen) els.newChampionshipBtn.focus();
     }
 
     applyThemeSetting(themeSetting);
@@ -3690,10 +3650,6 @@
     els.saveBtn.addEventListener('click', upsertAthlete);
     els.incrementBtn.addEventListener('click', incrementAthleteNumber);
     els.printBtn.addEventListener('click', () => window.print());
-    els.moreMenuBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      toggleMoreMenu();
-    });
     els.newChampionshipBtn.addEventListener('click', requestNewChampionship);
     els.openChampionshipBtn.addEventListener('click', () => {
       closeMoreMenu();
@@ -3719,8 +3675,14 @@
         showStatus(error?.message || 'Não foi possível exportar o Excel.', 'error');
       }
     });
-    els.openSettingsBtn.addEventListener('click', () => openInterfaceModal(els.settingsModal, els.closeSettingsBtn));
-    els.openAboutBtn.addEventListener('click', () => openInterfaceModal(els.aboutModal, els.closeAboutBtn));
+    els.openSettingsBtn.addEventListener('click', () => {
+      closeMoreMenu();
+      openInterfaceModal(els.settingsModal, els.closeSettingsBtn);
+    });
+    els.openAboutBtn.addEventListener('click', () => {
+      closeMoreMenu();
+      openInterfaceModal(els.aboutModal, els.closeAboutBtn);
+    });
     els.themeSettingInputs.forEach(input => {
       input.addEventListener('change', () => applyThemeSetting(input.value));
     });
@@ -3739,15 +3701,6 @@
     els.closeOpenChampionshipBtn.addEventListener('click', () => closeInterfaceModal(els.openChampionshipModal));
     els.closeSettingsBtn.addEventListener('click', () => closeInterfaceModal(els.settingsModal));
     els.closeAboutBtn.addEventListener('click', () => closeInterfaceModal(els.aboutModal));
-    document.addEventListener('click', (e) => {
-      if (!els.moreMenu.hidden && !els.moreMenu.contains(e.target)) closeMoreMenu();
-    });
-    window.addEventListener('resize', () => {
-      if (!els.moreMenu.hidden) positionMoreMenu();
-    });
-    window.addEventListener('scroll', () => {
-      if (!els.moreMenu.hidden) positionMoreMenu();
-    }, true);
     els.closeEditBtn.addEventListener('click', closeEditModal);
     els.cancelEditBtn.addEventListener('click', closeEditModal);
     els.saveEditBtn.addEventListener('click', saveEditAthlete);
@@ -3812,7 +3765,7 @@
       }
     });
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !els.moreMenu.hidden) {
+      if (e.key === 'Escape' && els.sideMenu.isOpen) {
         closeMoreMenu();
         els.moreMenuBtn.focus();
         return;

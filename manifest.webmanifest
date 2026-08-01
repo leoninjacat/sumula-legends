@@ -9,7 +9,7 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#f5f7fb",
+  "background_color": "#f4f7fb",
   "theme_color": "#0f172a",
   "categories": ["sports", "productivity", "utilities"],
   "icons": [

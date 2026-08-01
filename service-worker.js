@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sumula-legends-v0.4.1-side-menu-r9';
+const CACHE_NAME = 'sumula-legends-v0.4.1-splash-r3';
 const APP_SHELL = [
   './',
   './index.html',
@@ -29,13 +29,16 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
+  const requestUrl = new URL(event.request.url);
+  if (!['http:', 'https:'].includes(requestUrl.protocol)) return;
+  if (requestUrl.origin !== self.location.origin) return;
 
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
         .then(response => {
           const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put('./index.html', copy));
+          caches.open(CACHE_NAME).then(cache => cache.put('./index.html', copy)).catch(() => {});
           return response;
         })
         .catch(() => caches.match('./index.html'))
@@ -49,7 +52,7 @@ self.addEventListener('fetch', event => {
       return fetch(event.request).then(response => {
         if (!response || response.status !== 200 || response.type === 'opaque') return response;
         const copy = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy)).catch(() => {});
         return response;
       });
     })

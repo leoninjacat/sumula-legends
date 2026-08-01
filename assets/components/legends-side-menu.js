@@ -49,6 +49,7 @@
             <button id="saveChampionshipBtn" class="legends-side-menu__item" type="button"><span class="legends-side-menu__item-icon" aria-hidden="true">↓</span><span class="legends-side-menu__item-label">Salvar campeonato</span><span class="legends-side-menu__shortcut">Ctrl+S</span></button>
             <div class="legends-side-menu__divider" aria-hidden="true"></div>
             <button id="menuImportExcelBtn" class="legends-side-menu__item" type="button"><span class="legends-side-menu__item-icon" aria-hidden="true">⇧</span><span class="legends-side-menu__item-label">Importar Excel</span></button>
+            <button id="menuImportTextBtn" class="legends-side-menu__item" type="button"><span class="legends-side-menu__item-icon" aria-hidden="true">≡</span><span class="legends-side-menu__item-label">Importar lista de nomes</span></button>
             <button id="exportMenuBtn" class="legends-side-menu__item" type="button" aria-expanded="false" aria-controls="exportSubmenu"><span class="legends-side-menu__item-icon" aria-hidden="true">⇩</span><span class="legends-side-menu__item-label">Exportar</span><span aria-hidden="true">⌄</span></button>
             <div id="exportSubmenu" class="legends-side-menu__submenu" hidden><button id="exportPdfBtn" class="legends-side-menu__item" type="button">Exportar súmula em PDF</button><button id="exportExcelBtn" class="legends-side-menu__item" type="button">Exportar para Excel</button></div>
             <div class="legends-side-menu__divider" aria-hidden="true"></div>

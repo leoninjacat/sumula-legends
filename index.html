@@ -2,16 +2,18 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#0f172a" />
   <meta name="description" content="Sistema para inscrição e organização de atletas em campeonatos." />
   <meta name="application-name" content="Súmula Legends" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Súmula Legends" />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png" />
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
+  <script>(function(){var t=localStorage.getItem('sumula_legends_theme')||'auto';if(t==='dark'||(t==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.dataset.theme='dark';document.querySelector('meta[name="theme-color"]').content='#0b1120'}})()</script>
   <script src="assets/components/legends-side-menu.js"></script>
   <title>Súmula Legends v0.4.1</title>
   <style>
@@ -69,6 +71,8 @@
       color: var(--text);
       overflow-x: hidden;
     }
+
+    .launch-splash{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:max(24px,env(safe-area-inset-top)) 24px max(24px,env(safe-area-inset-bottom));background:radial-gradient(circle at 50% 38%,#fff 0,#f4f7fb 55%,#e9eef6 100%);transition:opacity .25s ease,visibility .25s ease}.launch-splash.is-hidden{opacity:0;visibility:hidden;pointer-events:none}.launch-splash__content{display:flex;flex-direction:column;align-items:center;animation:launch-enter .45s ease-out both}.launch-splash img{width:clamp(112px,30vw,152px);height:auto;border-radius:31%;filter:drop-shadow(0 18px 28px #0d1b3426)}.launch-splash h1{margin:24px 0 5px;font-size:clamp(22px,6vw,30px);letter-spacing:-.03em;color:#172033}.launch-splash p{margin:0;color:#687386;font-size:13px;letter-spacing:.08em;text-transform:uppercase}.launch-splash__loader{width:42px;height:3px;margin-top:28px;overflow:hidden;border-radius:99px;background:#d9e1ed}.launch-splash__loader::after{content:"";display:block;width:55%;height:100%;border-radius:inherit;background:#5533d5;animation:launch-load .8s ease-in-out infinite alternate}:root[data-theme="dark"] .launch-splash{background:radial-gradient(circle at 50% 38%,#172033 0,#0b1120 58%,#070b14 100%)}:root[data-theme="dark"] .launch-splash h1{color:#e5e7eb}:root[data-theme="dark"] .launch-splash p{color:#9ca3af}:root[data-theme="dark"] .launch-splash__loader{background:#334155}@keyframes launch-enter{from{opacity:0;transform:translateY(8px) scale(.98)}}@keyframes launch-load{from{transform:translateX(-85%)}to{transform:translateX(165%)}}@media(prefers-reduced-motion:reduce){.launch-splash__content,.launch-splash__loader::after{animation:none}}
 
     .wrap {
       max-width: 1400px;
@@ -401,6 +405,7 @@
 
     input[type="text"],
     input[type="number"],
+    textarea,
     select {
       width: 100%;
       border: 1px solid var(--line);
@@ -413,9 +418,24 @@
     }
 
     input:focus,
+    textarea:focus,
     select:focus {
       border-color: var(--accent);
       box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 260px;
+      line-height: 1.55;
+      font-family: inherit;
+    }
+
+    .import-list-summary {
+      min-height: 20px;
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.88rem;
     }
 
     .search-clear-wrap {
@@ -1566,6 +1586,8 @@
 </style>
 </head>
 <body>
+  <div id="launchSplash" class="launch-splash" aria-label="Iniciando Súmula Legends"><div class="launch-splash__content"><img src="assets/icons/icon-512.png" alt=""><h1>Súmula Legends</h1><p>Nordeste Legends</p><div class="launch-splash__loader" aria-hidden="true"></div></div></div>
+  <script>window.setTimeout(function(){var splash=document.getElementById('launchSplash');if(!splash)return;splash.classList.add('is-hidden');window.setTimeout(function(){splash.remove()},260)},850)</script>
   <div class="print-watermark" aria-hidden="true">
     <img src="assets/img/logo.png" alt="" />
   </div>
@@ -1725,6 +1747,31 @@
       </div>
       <div class="modal-footer">
         <button id="saveBtn" class="primary" type="button">Cadastrar atleta</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="importNamesModal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-import-names-modal="true"></div>
+    <div class="modal-dialog modal-sm modal-centered card" role="dialog" aria-modal="true" aria-labelledby="importNamesModalTitle">
+      <div class="modal-header">
+        <div>
+          <h2 id="importNamesModalTitle" style="margin:0;">Importar lista de nomes</h2>
+          <p class="small" style="margin:6px 0 0;">Digite ou cole um nome por linha. Os atletas serão importados sem número e sem categoria.</p>
+        </div>
+        <button id="closeImportNamesBtn" class="secondary icon-btn" type="button" aria-label="Fechar importação de nomes">✕</button>
+      </div>
+      <div class="modal-body" style="padding-top:18px;">
+        <div class="field" style="margin-bottom:0;">
+          <label for="namesListInput">Nomes dos atletas</label>
+          <textarea id="namesListInput" placeholder="Alberto Junqueira&#10;Bernardo Bolt&#10;Carlos Silva&#10;Danilo Fernandes" spellcheck="true"></textarea>
+        </div>
+        <p id="importNamesSummary" class="import-list-summary">Nenhum nome informado.</p>
+        <p class="small" style="margin:8px 0 0;">Linhas vazias e nomes repetidos serão ignorados. Os novos atletas serão adicionados ao campeonato atual sem remover ou alterar nenhum dado existente.</p>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelImportNamesBtn" class="secondary" type="button">Cancelar</button>
+        <button id="confirmImportNamesBtn" class="primary" type="button" disabled>Importar</button>
       </div>
     </div>
   </div>
@@ -1915,10 +1962,10 @@
 
     let draftSelectedCategories = [];
     let editDraftSelectedCategories = [];
-    let editingAthleteNumber = null;
+    let editingAthleteId = null;
     let editingCategoryName = null;
     let pendingDeleteCategoryName = null;
-    let pendingDeleteAthleteNumber = null;
+    let pendingDeleteAthleteId = null;
     let pendingConfirmedAction = null;
     let championshipLibrary = { championships: [], activeId: null };
     let activeChampionshipId = null;
@@ -1949,6 +1996,7 @@
       openChampionshipBtn: document.getElementById("openChampionshipBtn"),
       saveChampionshipBtn: document.getElementById("saveChampionshipBtn"),
       menuImportExcelBtn: document.getElementById("menuImportExcelBtn"),
+      menuImportTextBtn: document.getElementById("menuImportTextBtn"),
       exportMenuBtn: document.getElementById("exportMenuBtn"),
       exportSubmenu: document.getElementById("exportSubmenu"),
       exportPdfBtn: document.getElementById("exportPdfBtn"),
@@ -1957,6 +2005,12 @@
       openAboutBtn: document.getElementById("openAboutBtn"),
       openRegistrationBtn: document.getElementById("openRegistrationBtn"),
       registrationModal: document.getElementById("registrationModal"),
+      importNamesModal: document.getElementById("importNamesModal"),
+      closeImportNamesBtn: document.getElementById("closeImportNamesBtn"),
+      cancelImportNamesBtn: document.getElementById("cancelImportNamesBtn"),
+      confirmImportNamesBtn: document.getElementById("confirmImportNamesBtn"),
+      namesListInput: document.getElementById("namesListInput"),
+      importNamesSummary: document.getElementById("importNamesSummary"),
       editModal: document.getElementById("editModal"),
       closeEditBtn: document.getElementById("closeEditBtn"),
       cancelEditBtn: document.getElementById("cancelEditBtn"),
@@ -2046,7 +2100,7 @@
       const logoSrc = dark ? 'assets/img/logo_dark.png' : 'assets/img/logo.png';
       els.brandLogo.src = logoSrc;
       els.aboutLogo.src = logoSrc;
-      els.sideMenu.setLogo(logoSrc);
+      if (typeof els.sideMenu?.setLogo === 'function') els.sideMenu.setLogo(logoSrc);
       els.themeSettingInputs.forEach(input => { input.checked = input.value === themeSetting; });
     }
 
@@ -2166,13 +2220,24 @@
       )].map(normalizeCategoryName).filter(Boolean));
 
       return {
-        athletes: storedAthletes,
+        athletes: storedAthletes.map(athlete => ({
+          ...athlete,
+          id: athlete?.id || createAthleteId(),
+          numero: String(athlete?.numero ?? '').trim(),
+          nome: String(athlete?.nome ?? '').trim(),
+          categorias: Array.isArray(athlete?.categorias) ? athlete.categorias : []
+        })),
         categories: sortCategoriesByReference(
           (storedCategories.length ? storedCategories : derivedCategories)
             .map(normalizeCategoryName)
             .filter(Boolean)
         )
       };
+    }
+
+    function createAthleteId() {
+      if (typeof globalThis.crypto?.randomUUID === 'function') return globalThis.crypto.randomUUID();
+      return `atleta-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     }
 
     function loadState() {
@@ -2871,6 +2936,7 @@
       }
 
       const athlete = {
+        id: createAthleteId(),
         numero,
         nome,
         categorias: sortCategoriesByReference([...selectedCategories])
@@ -2891,15 +2957,15 @@
       renderAll();
     }
 
-    function openEditModal(numero) {
-      const athlete = state.athletes.find(a => a.numero === String(numero));
+    function openEditModal(athleteId) {
+      const athlete = state.athletes.find(a => a.id === String(athleteId));
       if (!athlete) return;
 
       const editNameEl = document.getElementById('editModalName');
       if (editNameEl) editNameEl.textContent = athlete.nome;
 
       hideRegistrationFab();
-      editingAthleteNumber = athlete.numero;
+      editingAthleteId = athlete.id;
       els.editNumero.value = athlete.numero;
       els.editNome.value = athlete.nome;
       els.editBusca.value = '';
@@ -2916,7 +2982,7 @@
     function closeEditModal() {
       els.editModal.classList.remove('show');
       els.editModal.setAttribute('aria-hidden', 'true');
-      editingAthleteNumber = null;
+      editingAthleteId = null;
       els.editBusca.value = '';
       editDraftSelectedCategories = [];
       renderEditSelectedPills([]);
@@ -2929,36 +2995,26 @@
       const nome = els.editNome.value.trim();
       const selectedCategories = getEditSelectedCategories();
 
-      if (!numero) {
-        showStatus('Informe o número do atleta.', 'warn');
-        els.editNumero.focus();
-        return;
-      }
-
       if (!nome) {
         showStatus('Informe o nome do atleta.', 'warn');
         els.editNome.focus();
         return;
       }
 
-      if (selectedCategories.length === 0) {
-        showStatus('Marque pelo menos uma categoria.', 'warn');
-        return;
-      }
-
-      const duplicate = state.athletes.find(a => a.numero === numero && a.numero !== editingAthleteNumber);
+      const duplicate = numero && state.athletes.find(a => a.numero === numero && a.id !== editingAthleteId);
       if (duplicate) {
         showStatus(`Já existe um atleta com o número ${numero}.`, 'error');
         return;
       }
 
       const athlete = {
+        id: editingAthleteId,
         numero,
         nome,
         categorias: sortCategoriesByReference([...selectedCategories])
       };
 
-      const editIndex = state.athletes.findIndex(a => a.numero === editingAthleteNumber);
+      const editIndex = state.athletes.findIndex(a => a.id === editingAthleteId);
       if (editIndex < 0) return;
 
       state.athletes[editIndex] = athlete;
@@ -2966,31 +3022,31 @@
       saveState();
       renderAll();
       closeEditModal();
-      showStatus(`Atleta salvo: ${numero} — ${nome}`);
+      showStatus(`Atleta salvo: ${numero ? `${numero} — ` : ''}${nome}`);
     }
 
-    function editAthlete(numero) {
-      openEditModal(numero);
+    function editAthlete(athleteId) {
+      openEditModal(athleteId);
     }
 
-    function removeAthlete(numero) {
-      const athlete = state.athletes.find(a => a.numero === String(numero));
+    function removeAthlete(athleteId) {
+      const athlete = state.athletes.find(a => a.id === String(athleteId));
       if (!athlete) return;
 
-      pendingDeleteAthleteNumber = athlete.numero;
-      els.deleteAthleteMessage.textContent = `O atleta ${athlete.numero} — ${athlete.nome} será removido de todas as categorias deste campeonato.`;
+      pendingDeleteAthleteId = athlete.id;
+      els.deleteAthleteMessage.textContent = `O atleta ${athlete.numero ? `${athlete.numero} — ` : ''}${athlete.nome} será removido deste campeonato.`;
       openInterfaceModal(els.deleteAthleteModal, els.cancelDeleteAthleteBtn);
     }
 
     function closeDeleteAthleteModal() {
-      pendingDeleteAthleteNumber = null;
+      pendingDeleteAthleteId = null;
       closeInterfaceModal(els.deleteAthleteModal);
     }
 
     function confirmDeleteAthlete() {
-      if (!pendingDeleteAthleteNumber) return;
-      state.athletes = state.athletes.filter(a => a.numero !== String(pendingDeleteAthleteNumber));
-      pendingDeleteAthleteNumber = null;
+      if (!pendingDeleteAthleteId) return;
+      state.athletes = state.athletes.filter(a => a.id !== pendingDeleteAthleteId);
+      pendingDeleteAthleteId = null;
       saveState();
       closeInterfaceModal(els.deleteAthleteModal);
       renderAll();
@@ -3004,6 +3060,7 @@
     function showRegistrationFab() {
       if (
         els.editModal.classList.contains('show') ||
+        els.importNamesModal.classList.contains('show') ||
         els.deleteAthleteModal.classList.contains('show') ||
         els.deleteCategoryModal.classList.contains('show') ||
         els.categoryAthletesModal.classList.contains('show') ||
@@ -3020,6 +3077,7 @@
     function updateBodyScrollLock() {
       const hasOpenModal =
         els.registrationModal.classList.contains('show') ||
+        els.importNamesModal.classList.contains('show') ||
         els.editModal.classList.contains('show') ||
         els.deleteAthleteModal.classList.contains('show') ||
         els.deleteCategoryModal.classList.contains('show') ||
@@ -3063,6 +3121,7 @@
         for (const categoria of athlete.categorias) {
           if (isOverallCategory(categoria)) continue;
           rows.push({
+            id: athlete.id,
             numero: athlete.numero,
             nome: athlete.nome,
             categoria
@@ -3200,6 +3259,7 @@
 
         if (!athleteMap.has(athleteKey)) {
           athleteMap.set(athleteKey, {
+            id: createAthleteId(),
             numero: cleanNumber,
             nome: cleanName,
             categorias: new Set()
@@ -3364,6 +3424,90 @@
       return importAthletesFromExcelRows(rows);
     }
 
+    function parsePlainTextAthleteNames(text) {
+      const seenNames = new Set();
+      return String(text ?? '')
+        .replace(/^\uFEFF/, '')
+        .split(/\r?\n/)
+        .map(name => name.replace(/\s+/g, ' ').trim())
+        .filter(name => {
+          if (!name) return false;
+          const normalizedName = normalizeSearchText(name);
+          if (!normalizedName || seenNames.has(normalizedName)) return false;
+          seenNames.add(normalizedName);
+          return true;
+        });
+    }
+
+    function importAthletesFromPlainText(text) {
+      const names = parsePlainTextAthleteNames(text);
+      if (!names.length) {
+        throw new Error('Digite ou cole pelo menos um nome de atleta.');
+      }
+
+      const existingNames = new Set(
+        state.athletes.map(athlete => normalizeSearchText(athlete.nome)).filter(Boolean)
+      );
+      const athletes = names
+        .filter(nome => !existingNames.has(normalizeSearchText(nome)))
+        .map(nome => ({
+          id: createAthleteId(),
+          numero: '',
+          nome,
+          categorias: []
+        }));
+
+      if (athletes.length) {
+        state.athletes.push(...athletes);
+        saveState();
+        renderAll();
+      }
+
+      return {
+        athletes: athletes.length,
+        ignored: names.length - athletes.length
+      };
+    }
+
+    function updateImportNamesSummary() {
+      const count = parsePlainTextAthleteNames(els.namesListInput.value).length;
+      els.confirmImportNamesBtn.disabled = count === 0;
+      els.importNamesSummary.textContent = count
+        ? `${count} atleta${count === 1 ? '' : 's'} pronto${count === 1 ? '' : 's'} para importar.`
+        : 'Nenhum nome informado.';
+    }
+
+    function openImportNamesModal() {
+      updateImportNamesSummary();
+      openInterfaceModal(els.importNamesModal, els.namesListInput);
+    }
+
+    function closeImportNamesModal() {
+      closeInterfaceModal(els.importNamesModal);
+    }
+
+    function confirmImportNames() {
+      try {
+        const summary = importAthletesFromPlainText(els.namesListInput.value);
+        if (!summary.athletes) {
+          showStatus('Todos os nomes informados já estão na lista de atletas.', 'warn');
+          els.namesListInput.focus();
+          return;
+        }
+        els.namesListInput.value = '';
+        updateImportNamesSummary();
+        closeImportNamesModal();
+        setActiveTab('athletesTab');
+        const ignoredMessage = summary.ignored
+          ? ` ${summary.ignored} nome${summary.ignored === 1 ? '' : 's'} já existente${summary.ignored === 1 ? '' : 's'} foi${summary.ignored === 1 ? '' : 'ram'} ignorado${summary.ignored === 1 ? '' : 's'}.`
+          : '';
+        showStatus(`${summary.athletes} atleta${summary.athletes === 1 ? '' : 's'} adicionado${summary.athletes === 1 ? '' : 's'} sem número e sem categoria.${ignoredMessage}`);
+      } catch (error) {
+        showStatus(error?.message || 'Não foi possível importar a lista de nomes.', 'error');
+        els.namesListInput.focus();
+      }
+    }
+
 
     function sanitizeExcelFileName(value) {
       const clean = String(value ?? '')
@@ -3457,13 +3601,23 @@
       }
 
       const search = els.athleteSearch.value.trim();
-      const visibleAthletes = search
+      const filteredAthletes = search
         ? state.athletes.filter(athlete => matchesSmartSearch({
             numero: athlete.numero,
             nome: athlete.nome,
             categoria: athlete.categorias.join(' ')
           }, search))
         : state.athletes;
+
+      const visibleAthletes = filteredAthletes
+        .map((athlete, originalIndex) => ({ athlete, originalIndex }))
+        .sort((a, b) => {
+          const aHasCategory = a.athlete.categorias.some(cat => !isOverallCategory(cat));
+          const bHasCategory = b.athlete.categorias.some(cat => !isOverallCategory(cat));
+          if (aHasCategory !== bHasCategory) return aHasCategory ? 1 : -1;
+          return a.originalIndex - b.originalIndex;
+        })
+        .map(item => item.athlete);
 
       if (!visibleAthletes.length) {
         els.athletesBody.innerHTML = `<tr><td colspan="4"><div class="empty">Nenhum atleta encontrado para “${escapeHtml(search)}”.</div></td></tr>`;
@@ -3472,13 +3626,13 @@
 
       els.athletesBody.innerHTML = visibleAthletes.map(athlete => `
         <tr>
-          <td><strong>${escapeHtml(athlete.numero)}</strong></td>
+          <td><strong>${athlete.numero ? escapeHtml(athlete.numero) : '<span class="small">Sem número</span>'}</strong></td>
           <td>${escapeHtml(athlete.nome)}</td>
-          <td>${athlete.categorias.filter(cat => !isOverallCategory(cat)).map(cat => `<button class="pill category-pill" type="button" onclick="openCategoryAthletesModal('${escapeJs(cat)}')">${escapeHtml(cat)}</button>`).join('')}</td>
+          <td>${athlete.categorias.filter(cat => !isOverallCategory(cat)).map(cat => `<button class="pill category-pill" type="button" onclick="openCategoryAthletesModal('${escapeJs(cat)}')">${escapeHtml(cat)}</button>`).join('') || '<span class="small">Sem categoria</span>'}</td>
           <td class="actions-column">
             <div class="table-actions">
-              <button class="secondary" onclick="editAthlete('${escapeJs(athlete.numero)}')">Editar</button>
-              <button class="danger" onclick="removeAthlete('${escapeJs(athlete.numero)}')">Excluir</button>
+              <button class="secondary" onclick="editAthlete('${escapeJs(athlete.id)}')">Editar</button>
+              <button class="danger" onclick="removeAthlete('${escapeJs(athlete.id)}')">Excluir</button>
             </div>
           </td>
         </tr>
@@ -3496,14 +3650,14 @@
       const totalRows = getCategoryPrintRowCount(items.length);
 
       const filledRows = items.map((item, index) => `
-        <tr class="row-editable" onclick="editAthlete('${escapeJs(item.numero)}')" title="Clique para editar este atleta">
+        <tr class="row-editable" onclick="editAthlete('${escapeJs(item.id)}')" title="Clique para editar este atleta">
           <td>${index + 1}</td>
           <td><strong>${escapeHtml(item.numero)}</strong></td>
           <td>
             <button
               class="athlete-link"
               type="button"
-              onclick="event.stopPropagation(); editAthlete('${escapeJs(item.numero)}')"
+              onclick="event.stopPropagation(); editAthlete('${escapeJs(item.id)}')"
               aria-label="Editar atleta ${escapeHtml(item.nome)}"
             >${escapeHtml(item.nome)}</button>
           </td>
@@ -3620,6 +3774,9 @@
       closeMoreMenu();
       els.excelInput.click();
     });
+    els.menuImportTextBtn.addEventListener('click', () => {
+      openImportNamesModal();
+    });
     els.excelInput.addEventListener('change', async (event) => {
       const [file] = event.target.files || [];
       if (!file) return;
@@ -3639,7 +3796,6 @@
         event.target.value = '';
       }
     });
-
     els.openRegistrationBtn.addEventListener('click', () => {
       if (els.registrationModal.classList.contains('show')) {
         closeRegistrationModal();
@@ -3649,6 +3805,10 @@
     });
     els.saveBtn.addEventListener('click', upsertAthlete);
     els.incrementBtn.addEventListener('click', incrementAthleteNumber);
+    els.namesListInput.addEventListener('input', updateImportNamesSummary);
+    els.closeImportNamesBtn.addEventListener('click', closeImportNamesModal);
+    els.cancelImportNamesBtn.addEventListener('click', closeImportNamesModal);
+    els.confirmImportNamesBtn.addEventListener('click', confirmImportNames);
     els.printBtn.addEventListener('click', () => window.print());
     els.newChampionshipBtn.addEventListener('click', requestNewChampionship);
     els.openChampionshipBtn.addEventListener('click', () => {
@@ -3732,6 +3892,11 @@
         closeRegistrationModal();
       }
     });
+    els.importNamesModal.addEventListener('click', (e) => {
+      if (e.target.dataset.closeImportNamesModal === 'true') {
+        closeImportNamesModal();
+      }
+    });
     els.deleteCategoryModal.addEventListener('click', (e) => {
       if (e.target.dataset.closeDeleteCategoryModal === 'true') {
         closeDeleteCategoryModal();
@@ -3773,6 +3938,10 @@
       if (e.key === 'Escape' && !els.categoryManagerForm.hidden) {
         resetCategoryForm();
         els.toggleCategoryFormBtn.focus();
+        return;
+      }
+      if (e.key === 'Escape' && els.importNamesModal.classList.contains('show')) {
+        closeImportNamesModal();
         return;
       }
       if (e.key === 'Escape' && els.editModal.classList.contains('show')) {

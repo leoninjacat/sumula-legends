@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sumula-legends-v0.4.1-splash-r3';
+const CACHE_NAME = 'sumula-legends-v0.5.0';
 const APP_SHELL = [
   './',
   './index.html',

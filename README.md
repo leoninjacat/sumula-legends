@@ -1,4 +1,4 @@
-# Súmula Legends v0.4.1
+# Súmula Legends v0.5.0
 
 Sistema web para inscrição e organização de atletas em campeonatos. Os dados são armazenados localmente no navegador utilizado.
 
@@ -25,6 +25,8 @@ Ao publicar uma nova versão, altere o nome do cache no início de `service-work
 ## Dados e backup
 
 Campeonatos e configurações ficam no armazenamento local do navegador. Limpar os dados do site, trocar de navegador ou trocar de aparelho não transfere automaticamente os campeonatos. Exporte os dados importantes antes dessas operações.
+
+No menu principal, use **Exportar → Exportar backup JSON** para baixar uma cópia completa dos campeonatos, do campeonato em edição e das configurações. No outro dispositivo, use **Importar backup JSON**, selecione o arquivo e confirme a substituição dos dados locais.
 
 ## Uso local
 

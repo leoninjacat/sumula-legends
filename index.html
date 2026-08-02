@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
   <script>(function(){var t=localStorage.getItem('sumula_legends_theme')||'auto';if(t==='dark'||(t==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.dataset.theme='dark';document.querySelector('meta[name="theme-color"]').content='#0b1120'}})()</script>
   <script src="assets/components/legends-side-menu.js"></script>
-  <title>Súmula Legends v0.4.1</title>
+  <title>Súmula Legends v0.5.0</title>
   <style>
     :root {
       --bg: #f5f7fb;
@@ -606,14 +606,29 @@
       overflow: hidden;
     }
 
-    .app-tabs {
+    .app-tabs-bar {
       display: flex;
-      gap: 6px;
+      align-items: center;
+      gap: 12px;
       margin: -4px -4px 16px;
       padding: 4px;
       border-bottom: 1px solid var(--line);
       overflow-x: auto;
       flex: 0 0 auto;
+    }
+
+    .app-tabs {
+      display: flex;
+      gap: 6px;
+      flex: 0 0 auto;
+    }
+
+    .athlete-enrollment-count {
+      margin: 0 8px 0 auto;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 700;
+      white-space: nowrap;
     }
 
     .app-tab {
@@ -703,6 +718,15 @@
     .table-actions button {
       flex: 0 0 auto;
       white-space: nowrap;
+    }
+
+    #categoriesTab .actions-column {
+      width: 180px;
+      text-align: right;
+    }
+
+    #categoriesTab .table-actions {
+      margin-left: auto;
     }
 
     .status {
@@ -1080,6 +1104,45 @@
       box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.18);
     }
 
+    .pdf-preview-dialog { width: min(1180px, calc(100vw - 32px)); }
+    .pdf-preview-dialog .modal-footer { flex-wrap:wrap; }
+    .pdf-preview-body { padding: 18px; background: var(--surface-soft); }
+    .pdf-preview-paper {
+      width: min(794px, 100%);
+      min-height: 900px;
+      margin: 0 auto;
+      padding: 30px 28px;
+      background: #fff;
+      color: #000;
+      box-shadow: 0 8px 30px rgba(15, 23, 42, .16);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .pdf-preview-paper .row-editable,
+    .pdf-preview-paper .athlete-link { cursor: default; }
+    .pdf-preview-paper h1 { margin: 0 0 8px; font-size: 18px; line-height: 1; }
+    .pdf-preview-paper h2 { margin: 0 0 7px; font-size: 13px; }
+    .pdf-preview-paper .category-grid,
+    .pdf-preview-paper .pdf-preview-overall-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px;align-items:start; }
+    .pdf-preview-paper .pdf-preview-overall { margin-top: 22px; }
+    .pdf-preview-paper .category-block { margin:0;padding:0;border:2px solid #000;border-radius:0;box-shadow:none;background:#fff;overflow:hidden; }
+    .pdf-preview-paper .category-block h3 { margin:0;padding:2px 6px;border-bottom:2px solid #000;font:700 9px/1.1 Arial,Helvetica,sans-serif;text-align:center; }
+    .pdf-preview-paper .table-wrap { margin:0;padding:0;border:0;overflow:hidden; }
+    .pdf-preview-paper table { width:100%;min-width:0;border-collapse:collapse;table-layout:fixed;margin:0; }
+    .pdf-preview-paper th,
+    .pdf-preview-paper td { height:17px;padding:1px 4px;border:1px solid #000;background:#fff;color:#000;font:400 8px/1.05 Arial,Helvetica,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+    .pdf-preview-paper th { font-weight:700;text-align:center; }
+    .pdf-preview-paper .col-nota { display:table-cell!important; }
+    .pdf-preview-paper.is-large-text th,
+    .pdf-preview-paper.is-large-text td { height:20px;font-size:10px; }
+    .pdf-preview-option-group { margin-right:auto;display:flex;align-items:center;gap:18px;flex-wrap:wrap; }
+    .pdf-preview-options { display:flex;align-items:center;gap:9px;font-weight:700;cursor:pointer; }
+    .pdf-preview-options input { width:18px;height:18px;margin:0;accent-color:var(--accent); }
+    .pdf-preview-paper.hide-empty-categories .pdf-empty-category { display:none!important; }
+    @media (max-width: 700px) {
+      .pdf-preview-paper { width:794px;transform:scale(.72);transform-origin:top left; }
+      .pdf-preview-body { overflow:auto; }
+    }
+
     .modal-dialog.modal-sm {
       width: min(760px, calc(100vw - 32px));
     }
@@ -1320,11 +1383,17 @@
     }
   
 
-/* ====== PDF STYLE v0.4.1 ====== */
+/* ====== PDF STYLE v0.5.0 ====== */
 @media print {
   @page {
     size: A4 portrait;
     margin: 8mm;
+
+    @bottom-center {
+      content: "Página " counter(page) " de " counter(pages);
+      font: 600 8px/1 Arial, Helvetica, sans-serif;
+      color: #555;
+    }
   }
 
   html,
@@ -1498,6 +1567,18 @@
     padding: 1px 3px !important;
   }
 
+  body.print-large-text .mini-table th,
+  body.print-large-text .mini-table td,
+  body.print-large-text th,
+  body.print-large-text td {
+    font-size: 10px !important;
+    height: 20px !important;
+  }
+
+  body.print-hide-empty-categories .pdf-empty-category {
+    display: none !important;
+  }
+
   .mini-table th:nth-child(1),
   .mini-table td:nth-child(1) {
     width: 34px !important;
@@ -1567,7 +1648,7 @@
 
 /* Show Nota column on print */
 @media print {
-  .app-tabs,
+  .app-tabs-bar,
   #athletesTab,
   #categoriesTab {
     display: none !important;
@@ -1591,7 +1672,7 @@
   <div class="print-watermark" aria-hidden="true">
     <img src="assets/img/logo.png" alt="" />
   </div>
-  <div class="document-credit">Súmula Legends v0.4.1 • Desenvolvido por LT ARTS</div>
+  <div class="document-credit">Súmula Legends v0.5.0 • Desenvolvido por LT ARTS</div>
   <div class="wrap">
     <div class="hero card">
       <legends-side-menu id="appSideMenu" logo="assets/img/logo.png" logo-alt="Logo Legends"></legends-side-menu>
@@ -1614,17 +1695,21 @@
 
       <div class="hero-actions">
         <input id="excelInput" type="file" accept=".xlsx,.xls" hidden />
+        <input id="jsonInput" type="file" accept=".json,application/json" hidden />
         <button id="printBtn" class="primary" type="button">Gerar súmula em PDF</button>
       </div>
     </div>
 
     <div class="layout">
       <main class="card content">
-        <nav class="app-tabs" role="tablist" aria-label="Áreas do sistema">
-          <button id="registrationsTabButton" class="app-tab" type="button" role="tab" aria-selected="true" aria-controls="registrationsTab" data-tab="registrationsTab">Inscrições</button>
-          <button id="athletesTabButton" class="app-tab" type="button" role="tab" aria-selected="false" aria-controls="athletesTab" data-tab="athletesTab" tabindex="-1">Atletas</button>
-          <button id="categoriesTabButton" class="app-tab" type="button" role="tab" aria-selected="false" aria-controls="categoriesTab" data-tab="categoriesTab" tabindex="-1">Categorias</button>
-        </nav>
+        <div class="app-tabs-bar">
+          <nav class="app-tabs" role="tablist" aria-label="Áreas do sistema">
+            <button id="registrationsTabButton" class="app-tab" type="button" role="tab" aria-selected="true" aria-controls="registrationsTab" data-tab="registrationsTab">Inscrições</button>
+            <button id="athletesTabButton" class="app-tab" type="button" role="tab" aria-selected="false" aria-controls="athletesTab" data-tab="athletesTab" tabindex="-1">Atletas</button>
+            <button id="categoriesTabButton" class="app-tab" type="button" role="tab" aria-selected="false" aria-controls="categoriesTab" data-tab="categoriesTab" tabindex="-1">Categorias</button>
+          </nav>
+          <p id="athleteEnrollmentCount" class="athlete-enrollment-count" aria-live="polite">Atletas inscritos até o momento: 0</p>
+        </div>
 
         <section id="registrationsTab" class="tab-panel active" role="tabpanel" aria-labelledby="registrationsTabButton">
           <div class="toolbar">
@@ -1813,7 +1898,7 @@
 
   <div id="categoryAthletesModal" class="modal" aria-hidden="true">
     <div class="modal-backdrop" data-close-category-athletes-modal="true"></div>
-    <div class="modal-dialog modal-sm card" role="dialog" aria-modal="true" aria-labelledby="categoryAthletesModalTitle">
+    <div class="modal-dialog modal-sm modal-centered card" role="dialog" aria-modal="true" aria-labelledby="categoryAthletesModalTitle">
       <div class="modal-header">
         <div>
           <h2 id="categoryAthletesModalTitle" style="margin:0;">Atletas da categoria</h2>
@@ -1904,6 +1989,50 @@
     </div>
   </div>
 
+  <div id="pdfPreviewModal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-pdf-preview-modal="true"></div>
+    <div class="modal-dialog pdf-preview-dialog card" role="dialog" aria-modal="true" aria-labelledby="pdfPreviewModalTitle">
+      <div class="modal-header">
+        <div><h2 id="pdfPreviewModalTitle" style="margin:0;">Pré-visualização do PDF</h2><p class="small" style="margin:6px 0 0;">Confira o documento e escolha o tamanho do texto antes de continuar.</p></div>
+        <button id="closePdfPreviewBtn" class="secondary icon-btn" type="button" aria-label="Fechar pré-visualização">✕</button>
+      </div>
+      <div class="modal-body pdf-preview-body">
+        <div id="pdfPreviewPaper" class="pdf-preview-paper" aria-label="Prévia do documento"></div>
+      </div>
+      <div class="modal-footer">
+        <div class="pdf-preview-option-group">
+          <label class="pdf-preview-options"><input id="largePdfText" type="checkbox" /><span>Texto maior (10 px)</span></label>
+          <label class="pdf-preview-options"><input id="hideEmptyPdfCategories" type="checkbox" /><span>Ocultar categorias sem inscritos</span></label>
+        </div>
+        <button id="cancelPdfPreviewBtn" class="secondary" type="button">Cancelar</button>
+        <button id="confirmPdfBtn" class="primary" type="button">Continuar para salvar PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="categoryEditModal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-category-edit-modal="true"></div>
+    <div class="modal-dialog modal-sm modal-centered card" role="dialog" aria-modal="true" aria-labelledby="categoryEditModalTitle">
+      <div class="modal-header">
+        <div>
+          <h2 id="categoryEditModalTitle" style="margin:0;">Editar categoria</h2>
+          <p class="small" style="margin:6px 0 0;">Altere o nome da categoria selecionada.</p>
+        </div>
+        <button id="closeCategoryEditBtn" class="secondary icon-btn" type="button" aria-label="Fechar edição de categoria">✕</button>
+      </div>
+      <div class="modal-body" style="padding-top:18px;">
+        <div class="field">
+          <label for="editCategoryNameInput">Nome da categoria</label>
+          <input id="editCategoryNameInput" type="text" autocomplete="off" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelCategoryEditModalBtn" class="secondary" type="button">Cancelar</button>
+        <button id="saveCategoryEditBtn" class="primary" type="button">Salvar alteração</button>
+      </div>
+    </div>
+  </div>
+
   <div id="settingsModal" class="modal" aria-hidden="true">
     <div class="modal-backdrop" data-close-settings-modal="true"></div>
     <div class="modal-dialog modal-sm modal-centered card" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle">
@@ -1932,7 +2061,7 @@
         <div class="about-brand">
           <img class="about-app-logo" src="assets/icons/Logo_Original.png" alt="Logo do aplicativo Súmula Legends" />
           <h2 style="margin:16px 0 6px;">Súmula Legends</h2>
-          <p class="small" style="margin:0;">Versão 0.4.1</p>
+          <p class="small" style="margin:0;">Versão 0.5.0</p>
           <img id="aboutLogo" class="about-federation-logo" src="assets/img/logo.png" alt="Logo Nordeste Legends" />
           <p style="margin:0;"><strong>Desenvolvido por LT ARTS</strong></p>
         </div>
@@ -1991,16 +2120,22 @@
       moreMenuBtn: document.getElementById("moreMenuBtn"),
       moreMenu: document.getElementById("moreMenu"),
       championshipName: document.getElementById("championshipName"),
+      athleteEnrollmentCount: document.getElementById("athleteEnrollmentCount"),
       saveIndicator: document.getElementById("saveIndicator"),
       newChampionshipBtn: document.getElementById("newChampionshipBtn"),
       openChampionshipBtn: document.getElementById("openChampionshipBtn"),
       saveChampionshipBtn: document.getElementById("saveChampionshipBtn"),
+      importMenuBtn: document.getElementById("importMenuBtn"),
+      importSubmenu: document.getElementById("importSubmenu"),
       menuImportExcelBtn: document.getElementById("menuImportExcelBtn"),
       menuImportTextBtn: document.getElementById("menuImportTextBtn"),
+      menuImportJsonBtn: document.getElementById("menuImportJsonBtn"),
+      jsonInput: document.getElementById("jsonInput"),
       exportMenuBtn: document.getElementById("exportMenuBtn"),
       exportSubmenu: document.getElementById("exportSubmenu"),
       exportPdfBtn: document.getElementById("exportPdfBtn"),
       exportExcelBtn: document.getElementById("exportExcelBtn"),
+      exportJsonBtn: document.getElementById("exportJsonBtn"),
       openSettingsBtn: document.getElementById("openSettingsBtn"),
       openAboutBtn: document.getElementById("openAboutBtn"),
       openRegistrationBtn: document.getElementById("openRegistrationBtn"),
@@ -2046,6 +2181,11 @@
       categoryAthletesModalSubtitle: document.getElementById("categoryAthletesModalSubtitle"),
       categoryAthletesBody: document.getElementById("categoryAthletesBody"),
       closeCategoryAthletesBtn: document.getElementById("closeCategoryAthletesBtn"),
+      categoryEditModal: document.getElementById("categoryEditModal"),
+      editCategoryNameInput: document.getElementById("editCategoryNameInput"),
+      closeCategoryEditBtn: document.getElementById("closeCategoryEditBtn"),
+      cancelCategoryEditModalBtn: document.getElementById("cancelCategoryEditModalBtn"),
+      saveCategoryEditBtn: document.getElementById("saveCategoryEditBtn"),
       newChampionshipModal: document.getElementById("newChampionshipModal"),
       newChampionshipModalTitle: document.getElementById("newChampionshipModalTitle"),
       newChampionshipModalMessage: document.getElementById("newChampionshipModalMessage"),
@@ -2055,6 +2195,13 @@
       openChampionshipModal: document.getElementById("openChampionshipModal"),
       closeOpenChampionshipBtn: document.getElementById("closeOpenChampionshipBtn"),
       recentChampionshipsList: document.getElementById("recentChampionshipsList"),
+      pdfPreviewModal: document.getElementById("pdfPreviewModal"),
+      pdfPreviewPaper: document.getElementById("pdfPreviewPaper"),
+      closePdfPreviewBtn: document.getElementById("closePdfPreviewBtn"),
+      cancelPdfPreviewBtn: document.getElementById("cancelPdfPreviewBtn"),
+      confirmPdfBtn: document.getElementById("confirmPdfBtn"),
+      largePdfText: document.getElementById("largePdfText"),
+      hideEmptyPdfCategories: document.getElementById("hideEmptyPdfCategories"),
       settingsModal: document.getElementById("settingsModal"),
       closeSettingsBtn: document.getElementById("closeSettingsBtn"),
       themeSettingInputs: [...document.querySelectorAll('input[name="themeSetting"]')],
@@ -2321,10 +2468,11 @@
       state.categories = getAvailableCategories();
     }
 
-    function saveState() {
+    function saveState({ autoSave = true } = {}) {
       refreshStoredCategories();
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      markUnsaved();
+      if (autoSave) saveCurrentChampionship({ automatic: true });
+      else markUnsaved();
     }
 
     function markUnsaved() {
@@ -2385,13 +2533,16 @@
       }).join('')}</div>`;
     }
 
-    function saveCurrentChampionship() {
-      closeMoreMenu();
+    function saveCurrentChampionship({ automatic = false } = {}) {
+      if (!automatic) closeMoreMenu();
       const name = els.championshipName.value.trim();
       if (!name) {
-        showStatus('Informe o nome do campeonato antes de salvar.', 'warn');
-        els.championshipName.focus();
-        return;
+        markUnsaved();
+        if (!automatic) {
+          showStatus('Informe o nome do campeonato antes de salvar.', 'warn');
+          els.championshipName.focus();
+        }
+        return false;
       }
 
       refreshStoredCategories();
@@ -2420,7 +2571,8 @@
       updateOpenChampionshipAvailability();
       renderRecentChampionships();
       markSaved();
-      showStatus('Campeonato salvo com sucesso.');
+      if (!automatic) showStatus('Campeonato salvo com sucesso.');
+      return true;
     }
 
     function createNewChampionshipWorkspace() {
@@ -2529,14 +2681,85 @@
       updateBodyScrollLock();
     }
 
+    function renderPdfPreview() {
+      const championshipName = els.championshipName.value.trim() || 'Súmula Legends';
+      const overallContent = els.overallPrintLists.innerHTML.trim();
+      els.pdfPreviewPaper.innerHTML = `
+        <h1>${escapeHtml(championshipName)}</h1>
+        <h2>Inscrições por categoria</h2>
+        <div class="category-grid">${els.categoryLists.innerHTML}</div>
+        ${overallContent ? `<section class="pdf-preview-overall"><h2>Categorias Overall</h2><div class="pdf-preview-overall-grid">${overallContent}</div></section>` : ''}
+      `;
+      els.pdfPreviewPaper.querySelectorAll('.category-grid .category-block').forEach(block => {
+        block.classList.toggle('pdf-empty-category', !block.querySelector('tbody tr.row-editable'));
+      });
+      els.pdfPreviewPaper.querySelectorAll('button, [tabindex]').forEach(element => {
+        element.setAttribute('tabindex', '-1');
+      });
+      updatePdfPreviewOptions();
+    }
+
+    function updatePdfPreviewOptions() {
+      els.pdfPreviewPaper.classList.toggle('is-large-text', els.largePdfText.checked);
+      els.pdfPreviewPaper.classList.toggle('hide-empty-categories', els.hideEmptyPdfCategories.checked);
+    }
+
+    function markEmptyPrintCategories() {
+      const blocks = document.querySelectorAll('#categoryLists .category-block');
+      blocks.forEach(block => {
+        block.classList.toggle('pdf-empty-category', !block.querySelector('tbody tr.row-editable'));
+      });
+    }
+
+    function openPdfPreview() {
+      renderPdfPreview();
+      openInterfaceModal(els.pdfPreviewModal, els.largePdfText);
+    }
+
+    function closePdfPreview() {
+      closeInterfaceModal(els.pdfPreviewModal);
+    }
+
+    function buildPdfDocumentName(championshipName, generatedAt = new Date()) {
+      const pad = value => String(value).padStart(2, '0');
+      const date = `${pad(generatedAt.getDate())}-${pad(generatedAt.getMonth() + 1)}-${generatedAt.getFullYear()}`;
+      const time = `${pad(generatedAt.getHours())}:${pad(generatedAt.getMinutes())}`;
+      return `${championshipName} ${date} ${time}`;
+    }
+
+    function continueToPdfPrint() {
+      markEmptyPrintCategories();
+      document.body.classList.toggle('print-large-text', els.largePdfText.checked);
+      document.body.classList.toggle('print-hide-empty-categories', els.hideEmptyPdfCategories.checked);
+      const previousDocumentTitle = document.title;
+      const championshipName = els.championshipName.value.trim() || 'Súmula Legends';
+      document.title = buildPdfDocumentName(championshipName);
+      window.addEventListener('afterprint', () => {
+        document.title = previousDocumentTitle;
+      }, { once: true });
+      closePdfPreview();
+      requestAnimationFrame(() => window.print());
+    }
+
     function toggleExportSubmenu() {
       const willOpen = els.exportSubmenu.hidden;
+      els.importSubmenu.hidden = true;
+      els.importMenuBtn.setAttribute('aria-expanded', 'false');
       els.exportSubmenu.hidden = !willOpen;
       els.exportMenuBtn.setAttribute('aria-expanded', String(willOpen));
       if (willOpen) {
         positionExportSubmenu();
         els.exportPdfBtn.focus();
       }
+    }
+
+    function toggleImportSubmenu() {
+      const willOpen = els.importSubmenu.hidden;
+      els.exportSubmenu.hidden = true;
+      els.exportMenuBtn.setAttribute('aria-expanded', 'false');
+      els.importSubmenu.hidden = !willOpen;
+      els.importMenuBtn.setAttribute('aria-expanded', String(willOpen));
+      if (willOpen) els.menuImportExcelBtn.focus();
     }
 
     function setActiveTab(tabId, focusTab = false) {
@@ -2663,19 +2886,32 @@
 
     function beginCategoryEdit(categoryName) {
       if (!getAvailableCategories().includes(categoryName)) return;
+      resetCategoryForm();
       editingCategoryName = categoryName;
-      els.categoryNameInput.value = categoryName;
-      els.saveCategoryBtn.textContent = 'Salvar alteração';
-      els.cancelCategoryEditBtn.hidden = false;
-      openCategoryForm();
-      requestAnimationFrame(() => els.categoryNameInput.select());
+      els.editCategoryNameInput.value = categoryName;
+      els.categoryEditModal.classList.add('show');
+      els.categoryEditModal.setAttribute('aria-hidden', 'false');
+      hideRegistrationFab();
+      updateBodyScrollLock();
+      requestAnimationFrame(() => {
+        els.editCategoryNameInput.focus();
+        els.editCategoryNameInput.select();
+      });
+    }
+
+    function closeCategoryEditModal() {
+      editingCategoryName = null;
+      els.editCategoryNameInput.value = '';
+      closeInterfaceModal(els.categoryEditModal);
     }
 
     function saveCategory() {
-      const nextName = normalizeCategoryName(els.categoryNameInput.value);
+      const isEditing = Boolean(editingCategoryName);
+      const activeInput = isEditing ? els.editCategoryNameInput : els.categoryNameInput;
+      const nextName = normalizeCategoryName(activeInput.value);
       if (!nextName) {
         showStatus('Informe o nome da categoria.', 'warn');
-        els.categoryNameInput.focus();
+        activeInput.focus();
         return;
       }
 
@@ -2703,7 +2939,8 @@
 
       state.categories = sortCategoriesByReference([...new Set(state.categories)]);
       saveState();
-      resetCategoryForm();
+      if (isEditing) closeCategoryEditModal();
+      else resetCategoryForm();
       renderAll();
     }
 
@@ -3064,8 +3301,10 @@
         els.deleteAthleteModal.classList.contains('show') ||
         els.deleteCategoryModal.classList.contains('show') ||
         els.categoryAthletesModal.classList.contains('show') ||
+        els.categoryEditModal.classList.contains('show') ||
         els.newChampionshipModal.classList.contains('show') ||
         els.openChampionshipModal.classList.contains('show') ||
+        els.pdfPreviewModal.classList.contains('show') ||
         els.settingsModal.classList.contains('show') ||
         els.aboutModal.classList.contains('show')
       ) {
@@ -3082,8 +3321,10 @@
         els.deleteAthleteModal.classList.contains('show') ||
         els.deleteCategoryModal.classList.contains('show') ||
         els.categoryAthletesModal.classList.contains('show') ||
+        els.categoryEditModal.classList.contains('show') ||
         els.newChampionshipModal.classList.contains('show') ||
         els.openChampionshipModal.classList.contains('show') ||
+        els.pdfPreviewModal.classList.contains('show') ||
         els.settingsModal.classList.contains('show') ||
         els.aboutModal.classList.contains('show');
       document.body.style.overflow = hasOpenModal ? 'hidden' : '';
@@ -3390,7 +3631,7 @@
 
       state.categories = sortCategoriesByReference([...importedCategories]);
       state.athletes = importedAthletes;
-      saveState();
+      saveState({ autoSave: false });
       renderAll();
 
       return {
@@ -3580,12 +3821,130 @@
         Subject: 'Inscrições por categoria',
         Author: 'LT ARTS',
         Company: 'Súmula Legends',
-        Comments: 'Arquivo exportado pela Súmula Legends v0.4.1'
+        Comments: 'Arquivo exportado pela Súmula Legends v0.5.0'
       };
 
       const filename = `${sanitizeExcelFileName(championshipName)}.xlsx`;
       XLSX.writeFile(workbook, filename, { compression: true });
       return summary;
+    }
+
+    function buildJsonBackup() {
+      refreshStoredCategories();
+      return {
+        app: 'sumula-legends',
+        formatVersion: 1,
+        appVersion: '0.5.0',
+        exportedAt: new Date().toISOString(),
+        data: {
+          currentChampionship: cloneState(state),
+          championshipLibrary: cloneState({
+            championships: championshipLibrary.championships,
+            activeId: activeChampionshipId
+          }),
+          workspace: {
+            activeId: activeChampionshipId,
+            name: els.championshipName.value.trim(),
+            dirty: isChampionshipDirty
+          },
+          settings: { theme: themeSetting }
+        }
+      };
+    }
+
+    function exportJsonBackup() {
+      const backup = buildJsonBackup();
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const date = backup.exportedAt.slice(0, 10);
+      link.href = url;
+      link.download = `${sanitizeExcelFileName(els.championshipName.value)}-backup-${date}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      return backup.data.championshipLibrary.championships.length;
+    }
+
+    function validateJsonBackup(parsed) {
+      if (!parsed || parsed.app !== 'sumula-legends' || parsed.formatVersion !== 1 || !parsed.data) {
+        throw new Error('Este arquivo não é um backup compatível da Súmula Legends.');
+      }
+
+      const currentChampionship = parseStoredState(JSON.stringify(parsed.data.currentChampionship));
+      if (!currentChampionship || !Array.isArray(parsed.data.currentChampionship?.athletes) || !Array.isArray(parsed.data.currentChampionship?.categories)) {
+        throw new Error('O campeonato atual do backup está incompleto.');
+      }
+
+      const sourceLibrary = parsed.data.championshipLibrary;
+      if (!sourceLibrary || !Array.isArray(sourceLibrary.championships)) {
+        throw new Error('A biblioteca de campeonatos do backup está incompleta.');
+      }
+
+      const usedIds = new Set();
+      const championships = sourceLibrary.championships.map(item => {
+        if (!item || typeof item !== 'object' || !Array.isArray(item.athletes) || !Array.isArray(item.categories)) {
+          throw new Error('Um dos campeonatos salvos no backup é inválido.');
+        }
+        const normalized = parseStoredState(JSON.stringify(item));
+        let id = String(item.id || '').trim() || createChampionshipId();
+        while (usedIds.has(id)) id = createChampionshipId();
+        usedIds.add(id);
+        return {
+          id,
+          name: String(item.name || 'Campeonato sem nome').trim() || 'Campeonato sem nome',
+          athletes: normalized.athletes,
+          categories: normalized.categories,
+          createdAt: typeof item.createdAt === 'string' ? item.createdAt : new Date().toISOString(),
+          updatedAt: typeof item.updatedAt === 'string' ? item.updatedAt : new Date().toISOString()
+        };
+      });
+
+      const requestedActiveId = String(parsed.data.workspace?.activeId || sourceLibrary.activeId || '').trim();
+      const importedActiveId = championships.some(item => item.id === requestedActiveId) ? requestedActiveId : null;
+      const importedTheme = ['light', 'dark', 'auto'].includes(parsed.data.settings?.theme)
+        ? parsed.data.settings.theme
+        : 'auto';
+
+      return {
+        currentChampionship,
+        library: { championships, activeId: importedActiveId },
+        workspace: {
+          activeId: importedActiveId,
+          name: String(parsed.data.workspace?.name || 'Campeonato importado').trim() || 'Campeonato importado',
+          dirty: typeof parsed.data.workspace?.dirty === 'boolean' ? parsed.data.workspace.dirty : true
+        },
+        theme: importedTheme
+      };
+    }
+
+    async function readJsonBackup(file) {
+      if (!file || (!file.name.toLowerCase().endsWith('.json') && file.type !== 'application/json')) {
+        throw new Error('Selecione um arquivo de backup no formato JSON.');
+      }
+      let parsed;
+      try {
+        parsed = JSON.parse(await file.text());
+      } catch {
+        throw new Error('O arquivo JSON não pôde ser lido ou está corrompido.');
+      }
+      return validateJsonBackup(parsed);
+    }
+
+    function applyJsonBackup(backup) {
+      const keys = [STORAGE_KEY, CHAMPIONSHIP_LIBRARY_KEY, WORKSPACE_META_KEY, THEME_STORAGE_KEY];
+      const previousValues = new Map(keys.map(key => [key, localStorage.getItem(key)]));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(backup.currentChampionship));
+        localStorage.setItem(CHAMPIONSHIP_LIBRARY_KEY, JSON.stringify(backup.library));
+        localStorage.setItem(WORKSPACE_META_KEY, JSON.stringify(backup.workspace));
+        localStorage.setItem(THEME_STORAGE_KEY, backup.theme);
+      } catch (error) {
+        previousValues.forEach((value, key) => value === null ? localStorage.removeItem(key) : localStorage.setItem(key, value));
+        throw new Error('Não foi possível gravar o backup neste dispositivo. Os dados anteriores foram preservados.');
+      }
+      window.location.reload();
     }
 
     function renderAthletesTable() {
@@ -3765,17 +4124,52 @@
       renderAthletesTable();
       renderCategoryLists();
       renderCategoryManager();
+      const athleteCount = state.athletes.length;
+      els.athleteEnrollmentCount.textContent = `Atletas inscritos até o momento: ${athleteCount}`;
     }
 
 
 
 
+    els.importMenuBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      toggleImportSubmenu();
+    });
     els.menuImportExcelBtn.addEventListener('click', () => {
       closeMoreMenu();
       els.excelInput.click();
     });
     els.menuImportTextBtn.addEventListener('click', () => {
       openImportNamesModal();
+    });
+    els.menuImportJsonBtn.addEventListener('click', () => {
+      closeMoreMenu();
+      els.jsonInput.click();
+    });
+    els.jsonInput.addEventListener('change', async (event) => {
+      const [file] = event.target.files || [];
+      if (!file) return;
+      try {
+        const backup = await readJsonBackup(file);
+        requestDiscardConfirmation({
+          title: 'Importar backup completo?',
+          message: `Os dados atuais serão substituídos por ${backup.library.championships.length} campeonato${backup.library.championships.length === 1 ? '' : 's'} salvo${backup.library.championships.length === 1 ? '' : 's'} do backup.`,
+          buttonLabel: 'Substituir e importar',
+          action: () => {
+            try {
+              applyJsonBackup(backup);
+            } catch (error) {
+              console.error(error);
+              showStatus(error?.message || 'Não foi possível importar o backup JSON.', 'error');
+            }
+          }
+        });
+      } catch (error) {
+        console.error(error);
+        showStatus(error?.message || 'Não foi possível importar o backup JSON.', 'error');
+      } finally {
+        event.target.value = '';
+      }
     });
     els.excelInput.addEventListener('change', async (event) => {
       const [file] = event.target.files || [];
@@ -3787,7 +4181,7 @@
         championshipLibrary.activeId = null;
         els.championshipName.value = file.name.replace(/\.[^.]+$/, '') || 'Campeonato importado';
         persistChampionshipLibrary();
-        markUnsaved();
+        saveCurrentChampionship({ automatic: true });
         showStatus(`Excel importado: ${summary.athletes} atletas consolidados em ${summary.categories} categorias.`);
       } catch (error) {
         console.error(error);
@@ -3809,7 +4203,7 @@
     els.closeImportNamesBtn.addEventListener('click', closeImportNamesModal);
     els.cancelImportNamesBtn.addEventListener('click', closeImportNamesModal);
     els.confirmImportNamesBtn.addEventListener('click', confirmImportNames);
-    els.printBtn.addEventListener('click', () => window.print());
+    els.printBtn.addEventListener('click', openPdfPreview);
     els.newChampionshipBtn.addEventListener('click', requestNewChampionship);
     els.openChampionshipBtn.addEventListener('click', () => {
       closeMoreMenu();
@@ -3823,7 +4217,7 @@
     });
     els.exportPdfBtn.addEventListener('click', () => {
       closeMoreMenu();
-      window.print();
+      openPdfPreview();
     });
     els.exportExcelBtn.addEventListener('click', () => {
       closeMoreMenu();
@@ -3833,6 +4227,16 @@
       } catch (error) {
         console.error(error);
         showStatus(error?.message || 'Não foi possível exportar o Excel.', 'error');
+      }
+    });
+    els.exportJsonBtn.addEventListener('click', () => {
+      closeMoreMenu();
+      try {
+        const championshipCount = exportJsonBackup();
+        showStatus(`Backup JSON exportado com ${championshipCount} campeonato${championshipCount === 1 ? '' : 's'} salvo${championshipCount === 1 ? '' : 's'}.`);
+      } catch (error) {
+        console.error(error);
+        showStatus(error?.message || 'Não foi possível exportar o backup JSON.', 'error');
       }
     });
     els.openSettingsBtn.addEventListener('click', () => {
@@ -3859,6 +4263,19 @@
       if (action) action();
     });
     els.closeOpenChampionshipBtn.addEventListener('click', () => closeInterfaceModal(els.openChampionshipModal));
+    els.closePdfPreviewBtn.addEventListener('click', closePdfPreview);
+    els.cancelPdfPreviewBtn.addEventListener('click', closePdfPreview);
+    els.confirmPdfBtn.addEventListener('click', continueToPdfPrint);
+    els.largePdfText.addEventListener('change', () => {
+      updatePdfPreviewOptions();
+    });
+    els.hideEmptyPdfCategories.addEventListener('change', updatePdfPreviewOptions);
+    window.addEventListener('afterprint', () => {
+      document.body.classList.remove('print-large-text', 'print-hide-empty-categories');
+      document.querySelectorAll('.pdf-empty-category').forEach(element => {
+        element.classList.remove('pdf-empty-category');
+      });
+    });
     els.closeSettingsBtn.addEventListener('click', () => closeInterfaceModal(els.settingsModal));
     els.closeAboutBtn.addEventListener('click', () => closeInterfaceModal(els.aboutModal));
     els.closeEditBtn.addEventListener('click', closeEditModal);
@@ -3880,6 +4297,9 @@
     els.categoryNameInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') saveCategory();
     });
+    els.editCategoryNameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') saveCategory();
+    });
     els.closeDeleteCategoryBtn.addEventListener('click', closeDeleteCategoryModal);
     els.cancelDeleteCategoryBtn.addEventListener('click', closeDeleteCategoryModal);
     els.confirmDeleteCategoryBtn.addEventListener('click', confirmDeleteCategory);
@@ -3887,6 +4307,9 @@
     els.cancelDeleteAthleteBtn.addEventListener('click', closeDeleteAthleteModal);
     els.confirmDeleteAthleteBtn.addEventListener('click', confirmDeleteAthlete);
     els.closeCategoryAthletesBtn.addEventListener('click', closeCategoryAthletesModal);
+    els.closeCategoryEditBtn.addEventListener('click', closeCategoryEditModal);
+    els.cancelCategoryEditModalBtn.addEventListener('click', closeCategoryEditModal);
+    els.saveCategoryEditBtn.addEventListener('click', saveCategory);
     els.registrationModal.addEventListener('click', (e) => {
       if (e.target.dataset.closeRegistrationModal === 'true') {
         closeRegistrationModal();
@@ -3912,12 +4335,24 @@
         closeCategoryAthletesModal();
       }
     });
+    els.categoryEditModal.addEventListener('click', (e) => {
+      if (e.target.dataset.closeCategoryEditModal === 'true') {
+        closeCategoryEditModal();
+      }
+    });
     els.newChampionshipModal.addEventListener('click', (e) => {
       if (e.target.dataset.closeNewChampionshipModal === 'true') closeInterfaceModal(els.newChampionshipModal);
     });
     els.openChampionshipModal.addEventListener('click', (e) => {
       if (e.target.dataset.closeOpenChampionshipModal === 'true') closeInterfaceModal(els.openChampionshipModal);
     });
+    els.pdfPreviewModal.addEventListener('click', (e) => {
+      if (e.target.dataset.closePdfPreviewModal === 'true') closePdfPreview();
+    });
+    els.pdfPreviewPaper.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    }, true);
     els.settingsModal.addEventListener('click', (e) => {
       if (e.target.dataset.closeSettingsModal === 'true') closeInterfaceModal(els.settingsModal);
     });
@@ -3960,12 +4395,20 @@
         closeCategoryAthletesModal();
         return;
       }
+      if (e.key === 'Escape' && els.categoryEditModal.classList.contains('show')) {
+        closeCategoryEditModal();
+        return;
+      }
       if (e.key === 'Escape' && els.newChampionshipModal.classList.contains('show')) {
         closeInterfaceModal(els.newChampionshipModal);
         return;
       }
       if (e.key === 'Escape' && els.openChampionshipModal.classList.contains('show')) {
         closeInterfaceModal(els.openChampionshipModal);
+        return;
+      }
+      if (e.key === 'Escape' && els.pdfPreviewModal.classList.contains('show')) {
+        closePdfPreview();
         return;
       }
       if (e.key === 'Escape' && els.settingsModal.classList.contains('show')) {

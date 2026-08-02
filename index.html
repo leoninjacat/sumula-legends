@@ -1129,14 +1129,14 @@
     .pdf-preview-paper .table-wrap { margin:0;padding:0;border:0;overflow:hidden; }
     .pdf-preview-paper table { width:100%;min-width:0;border-collapse:collapse;table-layout:fixed;margin:0; }
     .pdf-preview-paper th,
-    .pdf-preview-paper td { height:17px;padding:1px 4px;border:1px solid #000;background:#fff;color:#000;font:400 8px/1.05 Arial,Helvetica,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+    .pdf-preview-paper td { height:var(--pdf-row-height,17px);padding:1px 4px;border:1px solid #000;background:#fff;color:#000;font:400 var(--pdf-text-size,8px)/1.05 Arial,Helvetica,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
     .pdf-preview-paper th { font-weight:700;text-align:center; }
     .pdf-preview-paper .col-nota { display:table-cell!important; }
-    .pdf-preview-paper.is-large-text th,
-    .pdf-preview-paper.is-large-text td { height:20px;font-size:10px; }
     .pdf-preview-option-group { margin-right:auto;display:flex;align-items:center;gap:18px;flex-wrap:wrap; }
     .pdf-preview-options { display:flex;align-items:center;gap:9px;font-weight:700;cursor:pointer; }
-    .pdf-preview-options input { width:18px;height:18px;margin:0;accent-color:var(--accent); }
+    .pdf-preview-options input[type="checkbox"] { width:18px;height:18px;margin:0;accent-color:var(--accent); }
+    .pdf-preview-options input[type="range"] { width:min(190px,35vw);height:auto;margin:0;accent-color:var(--accent); }
+    .pdf-text-size-value { min-width:42px;color:var(--accent);font-variant-numeric:tabular-nums; }
     .pdf-preview-paper.hide-empty-categories .pdf-empty-category { display:none!important; }
     @media (max-width: 700px) {
       .pdf-preview-paper { width:794px;transform:scale(.72);transform-origin:top left; }
@@ -1567,12 +1567,12 @@
     padding: 1px 3px !important;
   }
 
-  body.print-large-text .mini-table th,
-  body.print-large-text .mini-table td,
-  body.print-large-text th,
-  body.print-large-text td {
-    font-size: 10px !important;
-    height: 20px !important;
+  body.print-custom-text .mini-table th,
+  body.print-custom-text .mini-table td,
+  body.print-custom-text th,
+  body.print-custom-text td {
+    font-size: var(--pdf-print-text-size, 10px) !important;
+    height: var(--pdf-print-row-height, 20px) !important;
   }
 
   body.print-hide-empty-categories .pdf-empty-category {
@@ -2001,7 +2001,7 @@
       </div>
       <div class="modal-footer">
         <div class="pdf-preview-option-group">
-          <label class="pdf-preview-options"><input id="largePdfText" type="checkbox" /><span>Texto maior (10 px)</span></label>
+          <label class="pdf-preview-options" for="pdfTextSize"><span>Tamanho do texto</span><input id="pdfTextSize" type="range" min="8" max="14" step="1" value="10" /><output id="pdfTextSizeValue" class="pdf-text-size-value" for="pdfTextSize">10 px</output></label>
           <label class="pdf-preview-options"><input id="hideEmptyPdfCategories" type="checkbox" /><span>Ocultar categorias sem inscritos</span></label>
         </div>
         <button id="cancelPdfPreviewBtn" class="secondary" type="button">Cancelar</button>
@@ -2200,7 +2200,8 @@
       closePdfPreviewBtn: document.getElementById("closePdfPreviewBtn"),
       cancelPdfPreviewBtn: document.getElementById("cancelPdfPreviewBtn"),
       confirmPdfBtn: document.getElementById("confirmPdfBtn"),
-      largePdfText: document.getElementById("largePdfText"),
+      pdfTextSize: document.getElementById("pdfTextSize"),
+      pdfTextSizeValue: document.getElementById("pdfTextSizeValue"),
       hideEmptyPdfCategories: document.getElementById("hideEmptyPdfCategories"),
       settingsModal: document.getElementById("settingsModal"),
       closeSettingsBtn: document.getElementById("closeSettingsBtn"),
@@ -2700,7 +2701,11 @@
     }
 
     function updatePdfPreviewOptions() {
-      els.pdfPreviewPaper.classList.toggle('is-large-text', els.largePdfText.checked);
+      const fontSize = Number(els.pdfTextSize.value);
+      const rowHeight = Math.max(17, fontSize + 10);
+      els.pdfTextSizeValue.textContent = `${fontSize} px`;
+      els.pdfPreviewPaper.style.setProperty('--pdf-text-size', `${fontSize}px`);
+      els.pdfPreviewPaper.style.setProperty('--pdf-row-height', `${rowHeight}px`);
       els.pdfPreviewPaper.classList.toggle('hide-empty-categories', els.hideEmptyPdfCategories.checked);
     }
 
@@ -2713,7 +2718,7 @@
 
     function openPdfPreview() {
       renderPdfPreview();
-      openInterfaceModal(els.pdfPreviewModal, els.largePdfText);
+      openInterfaceModal(els.pdfPreviewModal, els.pdfTextSize);
     }
 
     function closePdfPreview() {
@@ -2729,7 +2734,11 @@
 
     function continueToPdfPrint() {
       markEmptyPrintCategories();
-      document.body.classList.toggle('print-large-text', els.largePdfText.checked);
+      const fontSize = Number(els.pdfTextSize.value);
+      const rowHeight = Math.max(17, fontSize + 10);
+      document.body.classList.add('print-custom-text');
+      document.body.style.setProperty('--pdf-print-text-size', `${fontSize}px`);
+      document.body.style.setProperty('--pdf-print-row-height', `${rowHeight}px`);
       document.body.classList.toggle('print-hide-empty-categories', els.hideEmptyPdfCategories.checked);
       const previousDocumentTitle = document.title;
       const championshipName = els.championshipName.value.trim() || 'Súmula Legends';
@@ -4266,12 +4275,12 @@
     els.closePdfPreviewBtn.addEventListener('click', closePdfPreview);
     els.cancelPdfPreviewBtn.addEventListener('click', closePdfPreview);
     els.confirmPdfBtn.addEventListener('click', continueToPdfPrint);
-    els.largePdfText.addEventListener('change', () => {
-      updatePdfPreviewOptions();
-    });
+    els.pdfTextSize.addEventListener('input', updatePdfPreviewOptions);
     els.hideEmptyPdfCategories.addEventListener('change', updatePdfPreviewOptions);
     window.addEventListener('afterprint', () => {
-      document.body.classList.remove('print-large-text', 'print-hide-empty-categories');
+      document.body.classList.remove('print-custom-text', 'print-hide-empty-categories');
+      document.body.style.removeProperty('--pdf-print-text-size');
+      document.body.style.removeProperty('--pdf-print-row-height');
       document.querySelectorAll('.pdf-empty-category').forEach(element => {
         element.classList.remove('pdf-empty-category');
       });
